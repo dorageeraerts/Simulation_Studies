@@ -82,7 +82,6 @@ The following steps leads to the installation of the container.
 T2B does not support docker. Therefore a few steps are necessary in order to bring the container there.
 - Apply the changes to the Dockerfile locally.
 - Build the image locally as explained [here](#i-have-a-muraves-repo)
-- 
 - Tag the image on Dockerhub:
   ```bash
   docker tag muraves-sim:latest <Docker_username>/muraves-sim:latest
