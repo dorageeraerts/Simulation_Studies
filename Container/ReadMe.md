@@ -12,7 +12,7 @@ The *muraves-sim* container is used to run the MuRaVes simulation. A container c
 1. Connect to T2B
 2. Download last version of setup_container.sh by doing *add command and path*
 3. Make it executable `chmod +x setup_container.sh`
-4. Execute: `./setup_container.sh`. It will ask for the folder (input directory) where you want/have your Simulation_Studies git repository. By default this is in a directory MURAVES inside your home directory. (If you would like to automatically set this folder, then change the DEFAULT_WORKSPACE path in setup_container.sh to the path where you want/have your git repository.)
+4. Execute: `./setup_container.sh`. It will ask for the folder (input directory) where you want/have your Simulation_Studies git repository. By default this is in a directory MURAVES inside your home directory. *(If you would like to automatically set this folder, then change the DEFAULT_WORKSPACE path in setup_container.sh to the path where you want/have your git repository.)*
 5. If succeeded, congratulations! The container is installed and running. The container is up and running is you see this output:
 
 ![image](../documentation/WelcomeContainer.png)
@@ -41,7 +41,16 @@ The choice of the editor is personal, read scripts with your favourite editor. H
   BUT:
   - Changes to the software installed in the container (new conda envs, new python packages, new libriaries, etc.) are temporary and exist only during your current session.
 
-## Local installation
+# Running the simulation in the container (In Simulation_Dora)
+
+Some dependencies to regulate:
+- Make sure the CRY library is linked (in CMakeList.txt)
+- By default, the datasets of Geant4 are not installed in the container (to limit memory). However, the datasets - available locally on PC or T2B cluster - are mounted (done in setup_container.sh) into the directory /root/geant4/data on the container. To make sure the datapath is set, in the container, run the following command
+```bash
+export GEANT4_DATA_DIR=/root/geant4/data
+```
+
+# Local installation
 *For the local execution of MuRaVes script, the user is free to set up the preferred environment. One possibility is to use the container available in this Git repository: in the `/environment/docker/` folder are available the Dockerfile and a bash script `entrypoint.sh` that are needed to build the image of the container.*
 
 The following steps leads to the installation of the container.
