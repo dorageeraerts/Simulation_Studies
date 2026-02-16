@@ -44,7 +44,10 @@ The choice of the editor is personal, read scripts with your favourite editor. H
 # Running the simulation in the container (In Simulation_Dora)
 
 Some dependencies to regulate:
-- Make sure the CRY library is linked (in CMakeList.txt)
+- Make sure the CRY library is linked -> in CMakeLists.txt: set
+  ```bash
+  set(CRY_PATH /opt/CRY)
+  ```
 - By default, the datasets of Geant4 are not installed in the container (to limit memory). However, the datasets - available locally on PC or T2B cluster - are mounted (done in setup_container.sh) into the directory /root/geant4/data on the container. To make sure the datapath is set, in the container, run the following command
 ```bash
 export GEANT4_DATA_DIR=/root/geant4/data
