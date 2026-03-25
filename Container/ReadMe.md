@@ -66,7 +66,7 @@ The following steps leads to the installation of the container.
    ```bash
    git clone https://github.com/muraves/Simulation_Studies.git 
    ```
-2. Enter the folder where the docker file is located `~$ cd Software/environment/docker/`, and run:
+2. Enter the folder where the docker file is located `~$ cd Simulation_Studies/Container/`, and run:
    ```bash
    docker build -t muraves-sim .
    ```
