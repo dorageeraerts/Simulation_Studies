@@ -27,7 +27,7 @@ jobs:
     steps:
       # Step 1: download your code onto the CI machine
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       # Step 2: create a build folder (same as you do locally)
       - name: Configure
