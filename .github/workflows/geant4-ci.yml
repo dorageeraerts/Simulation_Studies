@@ -32,12 +32,12 @@ jobs:
       # Step 2: create a build folder (same as you do locally)
       - name: Configure
         run: |
-          mkdir build
-          cd build
+          mkdir Geant4-simulation/build
+          cd Geant4-simulation/build
           cmake ..
 
       # Step 3: compile
       - name: Build
         run: |
-          cd build
+          cd Geant4-simulation/build
           make -j$(nproc)
