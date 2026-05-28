@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir Geant4-simulation/build
           cd Geant4-simulation/build
-          cmake DCRY_PATH=/opt/CRY ..
+          cmake -DCRY_PATH=/opt/CRY ..
 
       # Step 3: compile
       - name: Build
