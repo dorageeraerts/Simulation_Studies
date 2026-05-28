@@ -40,4 +40,4 @@ jobs:
       - name: Build
         run: |
           cd Geant4-simulation/build
-          make -j$(nproc)
+          make
