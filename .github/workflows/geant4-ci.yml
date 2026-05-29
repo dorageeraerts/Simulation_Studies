@@ -36,15 +36,15 @@ jobs:
         if: steps.cache-geant4-data.outputs.cache-hit != 'true'
         run: |
           mkdir -p /opt/geant4/data
-          BASE=https://geant4-data.web.cern.ch/datasets
+          BASE=https://cern.ch/geant4-data/datasets
           cd /opt/geant4/data
           for dataset in \
-            G4EMLOW8.8 \
-            PhotonEvaporation6.1.2 \
-            RadioactiveDecay6.1.2 \
-            G4PARTICLEXS4.2 \
-            G4SAIDDATA2.0 \
-            G4ENSDFSTATE3.0
+            G4EMLOW.8.8 \
+            G4PhotonEvaporation.6.1.2 \
+            G4RadioactiveDecay.6.1.2 \
+            G4PARTICLEXS.4.2 \
+            G4SAIDDATA.2.0 \
+            G4ENSDFSTATE.3.0
           do
             echo "Downloading $dataset..."
             curl -L $BASE/$dataset.tar.gz | tar -xz
