@@ -36,7 +36,7 @@ jobs:
         if: steps.cache-geant4-data.outputs.cache-hit != 'true'
         run: |
           mkdir -p /opt/geant4/data
-          BASE=https://cern.ch/geant4-data
+          BASE=https://geant4-data.web.cern.ch/datasets
           cd /opt/geant4/data
           for dataset in \
             G4EMLOW8.8 \
@@ -47,7 +47,7 @@ jobs:
             G4ENSDFSTATE3.0
           do
             echo "Downloading $dataset..."
-            curl -L $BASE/datasets/$dataset.tar.gz | tar -xz
+            curl -L $BASE/$dataset.tar.gz | tar -xz
           done
 
       # Step 2: create a build folder (same as you do locally)
