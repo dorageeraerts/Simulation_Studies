@@ -135,15 +135,15 @@ next_run_number() {
     local base="$1"
     local max=0 n
 
-    if ls "${base}"/run_[0-9]* &>/dev/null 2>&1; then
-        for d in "${base}"/run_[0-9]*; do
+    if ls "${base}"/musimData_run_[0-9]* &>/dev/null 2>&1; then
+        for d in "${base}"/musimData_run_[0-9]*; do
             [[ -d "${d}" ]] || continue
-            n="${d##*/run_}"
+            n="${d##*/musimData_run_}"
             [[ "${n}" =~ ^[0-9]+$ ]] && (( n > max )) && max="${n}"
         done
     elif command -v gfal-ls &>/dev/null; then
         while IFS= read -r entry; do
-            [[ "${entry}" =~ ^run_([0-9]+)$ ]] && \
+            [[ "${entry}" =~ ^musimData_run_([0-9]+)$ ]] && \
                 (( ${BASH_REMATCH[1]} > max )) && max="${BASH_REMATCH[1]}"
         done < <(gfal-ls "gsiftp://dcache-door.iihe.ac.be/${base}" 2>/dev/null || true)
     fi
@@ -172,14 +172,14 @@ fi
 # --------------------------------------------------------------------------- #
 # Build destination directory tree
 # --------------------------------------------------------------------------- #
-RUN_DIR="${DEST_BASE}/run_${RUN_ID}"
+RUN_DIR="${DEST_BASE}/musimData_run_${RUN_ID}"
 
 # Change this to whatever name you prefer for the per-job root files subdir
-INDIVIDUAL_ROOT_SUBDIR="root_files"
+INDIVIDUAL_ROOT_SUBDIR="individual_root_files"
 
 DIR_MERGED_ROOT="${DEST_BASE}"
 DIR_INDIV_ROOT="${RUN_DIR}/${INDIVIDUAL_ROOT_SUBDIR}"
-DIR_RUN_LOGS="${RUN_DIR}/run_logs"
+DIR_RUN_LOGS="${RUN_DIR}/run_metadata"
 DIR_HTC_LOG="${RUN_DIR}/HTCondor/log"
 DIR_HTC_OUT="${RUN_DIR}/HTCondor/out"
 DIR_HTC_ERR="${RUN_DIR}/HTCondor/err"

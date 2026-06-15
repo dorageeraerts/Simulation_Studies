@@ -1,5 +1,5 @@
 universe         = vanilla
-executable       = /user/dgeeraer/MURAVES/Simulation_Studies/Simulation_Dora/HTCondor/run_muraves.sh
+executable       = /user/dgeeraer/MURAVES/Simulation_Studies/Geant4-simulation/HTCondor/run_muraves.sh
 arguments = $(ClusterId) $(ProcId)
 
 output           = /user/dgeeraer/MURAVES/output_simulation/output_htcondor/$(ClusterId)_$(ProcId).out
