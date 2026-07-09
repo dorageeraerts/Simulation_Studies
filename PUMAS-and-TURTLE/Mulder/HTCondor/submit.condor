@@ -1,0 +1,16 @@
+universe   = vanilla
+executable = run_bin_job.sh
+arguments  = $(az_start) $(az_end) $(el) $(job) $(Cluster) __DPHI__ __DEL__ __RHO__ __N_E__ __NEVENTS__
+
+output     = logs/job_$(az_start)_$(az_end)_$(el)_$(job)_$(Cluster).out
+error      = logs/job_$(az_start)_$(az_end)_$(el)_$(job)_$(Cluster).err
+log        = logs/cluster_$(Cluster).log
+
+should_transfer_files   = YES
+when_to_transfer_output = ON_EXIT
+
+max_idle = __MAX_IDLE__
+
+queue az_start,az_end,el,job from all_jobs.txt
+
+
