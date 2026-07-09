@@ -18,7 +18,7 @@ geometry = Geometry(
     Layer(
         material="Rock",
         density=args.rho,
-        model="../../mulder/data/5mNew_projection.png"
+        model="GRMT.asc" #model="../../mulder/data/5mNew_projection.png"
     ),
 )
 
