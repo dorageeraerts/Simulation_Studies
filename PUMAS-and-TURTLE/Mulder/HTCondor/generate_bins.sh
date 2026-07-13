@@ -1,22 +1,36 @@
 #!/bin/bash
-# generate_bins.sh <PHI_MIN> <PHI_MAX> <EL_MIN> <EL_MAX> <DPHI> <DEL> <RHO> <N_E> <NEVENTS> <N_AZ_PER_JOB>
+# generate_bins.sh [PHI_MIN] [PHI_MAX] [EL_MIN] [EL_MAX] [DPHI] [DEL] [RHO] [N_E] [NEVENTS] [N_AZ_PER_JOB]
+#
+# All parameters default to muraves_mulder_config.sh, the single source of
+# truth for a real run. Positional args are OPTIONAL and only meant for
+# quick one-off test grids (e.g. a tiny 2x2 grid to sanity-check chunking)
+# without editing the config file. For a real run, call with no arguments
+# at all so nothing can silently diverge from the config.
 #
 # Writes:
-#   run_config.txt - all run parameters, reused by every downstream script
+#   run_config.txt - all run parameters actually used, reused by every
+#                    downstream script (this is what everything else trusts,
+#                    NOT muraves_mulder_config.sh directly - so a test run's
+#                    overrides can't leak into a later real run by accident)
 #   bins.txt       - one row per individual az/el bin (used by combine_all_bins.sh)
 #   chunks.txt     - one row per az-chunk per el: "az_start az_end el"
 #                    (used by generate_job_list.sh to build Condor jobs)
 set -e
 
-PHI_MIN=$1; PHI_MAX=$2; EL_MIN=$3; EL_MAX=$4
-DPHI=$5; DEL=$6; RHO=$7; N_E=$8; NEVENTS=$9; N_AZ_PER_JOB=${10}
+source muraves_mulder_config.sh
 
-if [ -z "$N_AZ_PER_JOB" ]; then
-    echo "Usage: $0 PHI_MIN PHI_MAX EL_MIN EL_MAX DPHI DEL RHO N_E NEVENTS N_AZ_PER_JOB" >&2
-    exit 1
-fi
+PHI_MIN=${1:-$PHI_MIN}
+PHI_MAX=${2:-$PHI_MAX}
+EL_MIN=${3:-$EL_MIN}
+EL_MAX=${4:-$EL_MAX}
+DPHI=${5:-$DPHI}
+DEL=${6:-$DEL}
+RHO=${7:-$RHO}
+N_E=${8:-$N_E}
+NEVENTS=${9:-$NEVENTS}
+N_AZ_PER_JOB=${10:-$N_AZ_PER_JOB}
 
-cat > run_config.txt <<EOF
+cat > run_config.txt <<CFG
 PHI_MIN=$PHI_MIN
 PHI_MAX=$PHI_MAX
 EL_MIN=$EL_MIN
@@ -27,7 +41,7 @@ RHO=$RHO
 N_E=$N_E
 NEVENTS=$NEVENTS
 N_AZ_PER_JOB=$N_AZ_PER_JOB
-EOF
+CFG
 
 > bins.txt
 > chunks.txt

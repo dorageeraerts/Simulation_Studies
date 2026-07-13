@@ -1,10 +1,14 @@
 #!/bin/bash
-# generate_job_list.sh <N_JOBS_PER_BIN>
+# generate_job_list.sh [N_JOBS_PER_BIN]
+# Defaults to N_JOBS_PER_BIN from muraves_mulder_config.sh - pass an
+# argument only to override for a one-off test run.
+#
 # Expands chunks.txt x N_JOBS_PER_BIN replicas -> all_jobs.txt (az_start az_end el job)
 # all_jobs.txt is used as Condor itemdata: "queue az_start,az_end,el,job from all_jobs.txt"
 set -e
 
-N_JOBS_PER_BIN=${1:?"Usage: $0 N_JOBS_PER_BIN"}
+source muraves_mulder_config.sh
+N_JOBS_PER_BIN=${1:-$N_JOBS_PER_BIN}
 
 if [ ! -f chunks.txt ]; then
     echo "chunks.txt not found - run generate_bins.sh first" >&2

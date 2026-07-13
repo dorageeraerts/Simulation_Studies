@@ -4,6 +4,8 @@
 # the pipeline before scaling up to Condor.
 set -e
 
+./generate_bins.sh
+
 if [ ! -f chunks.txt ] || [ ! -f run_config.txt ]; then
     echo "chunks.txt / run_config.txt not found - run generate_bins.sh first" >&2
     exit 1
