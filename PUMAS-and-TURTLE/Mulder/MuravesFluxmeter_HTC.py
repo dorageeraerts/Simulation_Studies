@@ -41,7 +41,7 @@ fluxmeter = mulder.Fluxmeter(geometry=geometry)
 fluxmeter.mode = "discrete"
 
 # altitude correction, tabulation to MCEq results
-fluxmeter.reference = "flux-mceq-yfm-gsf-usstd.table"#"Gaisser90" #"../../mulder/data/flux-mceq-yfm-gsf-usstd.table"
+fluxmeter.reference = input_path + "flux-mceq-yfm-gsf-usstd.table"#"Gaisser90" #"../../mulder/data/flux-mceq-yfm-gsf-usstd.table"
 
 
 # observation point
@@ -72,7 +72,10 @@ el_max  = args.el_max
 del_el  = args.d_el
 
 az_vals = np.arange(phi_min, phi_max, dphi)
+az_vals = az_vals[az_vals < phi_max - 1e-9] #1e-9 to garantuee halfopen interval
+
 el_vals = np.arange(el_min, el_max, del_el)
+el_vals = el_vals[el_vals < el_max - 1e-9]
 
 n_az = len(az_vals)
 n_el = len(el_vals)
