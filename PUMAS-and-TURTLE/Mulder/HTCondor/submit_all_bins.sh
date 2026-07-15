@@ -86,18 +86,18 @@ echo "Cluster ID: $CLUSTER_ID"
 # Poll condor_q instead of tailing (condor_wait) a log file - works regardless of
 # whether the submit host and schedd host are the same machine, and
 # avoids any local-disk vs shared-filesystem visibility issues.
-echo "Waiting for cluster ${CLUSTER_ID} to finish..."
-while true; do
-    N_LEFT=$(condor_q "$CLUSTER_ID" -totals 2>/dev/null | grep "Total for query" | awk '{print $4}')
-    [ -z "$N_LEFT" ] && N_LEFT=0
-    if [ "$N_LEFT" -eq 0 ]; then
-        break
-    fi
-    sleep 60
-done
-echo "All jobs done."
+#echo "Waiting for cluster ${CLUSTER_ID} to finish..."
+#while true; do
+    #N_LEFT=$(condor_q "$CLUSTER_ID" -totals 2>/dev/null | grep "Total for query" | awk '{print $4}')
+    #[ -z "$N_LEFT" ] && N_LEFT=0
+    #if [ "$N_LEFT" -eq 0 ]; then
+        #break
+    #fi
+    #sleep 60
+#done
+#echo "All jobs done."
 
-mv "${LOGBASE}/${RUN_TAG}" "${LOGBASE}/${CLUSTER_ID}"
+#mv "${LOGBASE}/${RUN_TAG}" "${LOGBASE}/${CLUSTER_ID}"
 
 export CLUSTER_ID
-./combine_all_bins.sh
+#./combine_all_bins.sh

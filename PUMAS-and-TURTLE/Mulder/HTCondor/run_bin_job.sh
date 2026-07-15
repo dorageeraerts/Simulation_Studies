@@ -48,7 +48,7 @@ for attempt in $(seq 1 $N_TRIES); do
         --bind "${DATA_PATH_HOST}:${DATA_PATH_CONTAINER}" \
         --pwd "${DATA_PATH_CONTAINER}" \
         "${SIF_PATH}" \
-        mamba run -n muraves-mulder python MuravesFluxmeter_HTC.py \
+        mamba run -n muraves-mulder python MuravesFluxmeter_transmission.py \
         --phi-min "$AZ_START" --phi-max "$AZ_END" \
         --el-min "$EL" --el-max "$EL_MAX" \
         --d-phi "$DPHI" --d-el "$DEL" \

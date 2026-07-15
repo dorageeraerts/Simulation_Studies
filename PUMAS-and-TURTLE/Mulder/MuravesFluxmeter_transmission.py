@@ -40,6 +40,7 @@ parser.add_argument("--d-el", type=float, default=1.)
 parser.add_argument("--output-path",
                     type=str,
                     default="./mulder_output")
+parser.add_argument("--input-path", type=str, default="./")
 
 args = parser.parse_args()
 
@@ -50,7 +51,7 @@ args = parser.parse_args()
 
 geometry = mulder.EarthGeometry(
     mulder.Layer(
-        "GMRT.asc",
+        args.input_path + "GMRT.asc",
         density=args.rho,
         material="Rock",
     ),
@@ -67,10 +68,7 @@ fluxmeter = mulder.Fluxmeter(
 
 fluxmeter.mode = "discrete"
 
-fluxmeter.reference = (
-    "flux-mceq-yfm-gsf-usstd.table"
-)
-
+fluxmeter.reference = args.input_path + "flux-mceq-yfm-gsf-usstd.table"
 
 # ==============================================================
 # Observation point
@@ -147,7 +145,7 @@ os.makedirs(
 
 outfile = os.path.join(
     args.output_path,
-    f"transmission_5m_{args.d_phi}bin_rho{args.rho}_{args.tag}.txt"
+    f"flux_5m_{args.d_phi}bin_rho{args.rho}_discrete_100T_{args.tag}.txt"
 )
 
 
