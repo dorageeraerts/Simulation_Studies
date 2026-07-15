@@ -1,26 +1,21 @@
 #!/bin/bash
 # combine_bin.sh — combine the per-job-replica values for ONE angular bin.
-# Job files may now be "chunked": one file holds several az bins for a single
-# el (e.g. az150-155_el0_job1.txt has 5 rows, one per az). This script globs
-# all chunk/job files for the given el, then awk picks out just the row(s)
-# matching this specific az within tolerance, across all replicas/chunks.
+# Writes its one-line result to stdout; caller is responsible for collecting it.
 #
-# Input columns (per row): az el flux_rock flux_rock_err flux_open transmission transmission_err N_events
+# Input columns (per replica): az el flux_rock flux_rock_err flux_open transmission transmission_err N_events
 # Output columns: az el flux_rock_mean flux_rock_sem flux_open transmission_mean transmission_sem N_events_total
 set -e
 
 AZ=$1
 EL=$2
-INDIR=${3:-relativeApproach/condor_parts}
+DPHI=$3
+INDIR=${4:-relativeApproach/condor_parts}
 
 # Scale tolerance to bin width rather than a fixed constant, so it stays
 # safely smaller than the spacing between adjacent bins regardless of DPHI.
 DPHI_FOR_TOL=${DPHI:-0.2}
 TOL=${AZ_MATCH_TOL:-$(awk -v d="$DPHI_FOR_TOL" 'BEGIN{printf "%.9g", d/10}')}
 
-# az is now a range in the filename (az150-155), so match any range, not a
-# single az value. el is still a single value per file.
-#pattern="${INDIR}/flux_5m_*bin_rho*_az*-*_el${EL}_job*.txt"
 pattern="${INDIR}/flux_5m_*bin_rho*_discrete_100T_az*_el${EL}_job*.txt"
 files=( $pattern )
 
