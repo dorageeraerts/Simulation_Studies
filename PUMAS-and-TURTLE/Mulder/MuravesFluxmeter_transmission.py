@@ -51,7 +51,7 @@ args = parser.parse_args()
 
 '''geometry = mulder.EarthGeometry(
     mulder.Layer(
-        args.input_path + "vesuvio_5m_cut.asc",
+        args.input_path + "vesuvius_latlon.asc",
         density=args.rho,
         material="Rock",
     ),
@@ -118,18 +118,15 @@ energy = np.logspace(
 # Angular grid
 # ==============================================================
 
-az_vals = np.arange(
-    args.phi_min,
-    args.phi_max,
-    args.d_phi
-)
+#az_vals = np.arange(args.phi_min, args.phi_max, args.d_phi)
+#el_vals = np.arange(args.el_min, args.el_max, args.d_el)
 
-el_vals = np.arange(
-    args.el_min,
-    args.el_max,
-    args.d_el
-)
+# use linspace when working with float steps
+n_steps_phi = round((args.phi_max - args.phi_min) / args.d_phi)
+az_vals = np.linspace(args.phi_min, args.phi_min + n_steps_phi * args.d_phi, n_steps_phi, endpoint=False)
 
+n_steps_el = round((args.el_max - args.el_min) / args.d_el)
+el_vals = np.linspace(args.el_min, args.el_min + n_steps_el * args.d_el, n_steps_el, endpoint=False)
 
 n_az = len(az_vals)
 n_el = len(el_vals)
