@@ -49,9 +49,17 @@ args = parser.parse_args()
 # Geometry
 # ==============================================================
 
+'''geometry = mulder.EarthGeometry(
+    mulder.Layer(
+        args.input_path + "vesuvio_5m_cut.asc",
+        density=args.rho,
+        material="Rock",
+    ),
+)'''
+
 geometry = mulder.EarthGeometry(
     mulder.Layer(
-        args.input_path + "GMRT.asc",
+        mulder.Grid(args.input_path + "vesuvio_5m_cut.asc", crs=32633),
         density=args.rho,
         material="Rock",
     ),
