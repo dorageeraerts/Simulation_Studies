@@ -58,7 +58,7 @@ fi
 PHI_MIN_ABS=$(awk -v phi="$PHI_MIN" -v off="$PHI_OFFSET" 'BEGIN {printf "%.0f", phi + off}')
 PHI_MAX_ABS=$(awk -v phi="$PHI_MAX" -v off="$PHI_OFFSET" 'BEGIN {printf "%.0f", phi + off}')
 
-FINAL="${INDIR}/flux_all_bins_phi${PHI_MIN_ABS}-${PHI_MAX_ABS}_el${EL_MIN}-${EL_MAX}_dphi${DPHI}_del${DEL}_rho${RHO}_nE${N_E}_nEvents${NEVENTS}.txt"
+FINAL="${INDIR}/flux_all_bins_phi${PHI_MIN_ABS}-${PHI_MAX_ABS}_el${EL_MIN}-${EL_MAX}_dphi${DPHI}_del${DEL}_rho${RHO}_nE${N_E}_nEvents${NEVENTS}_$(date +%d%m%y).txt"
 
 UNSORTED="${INDIR}/.flux_all_bins_unsorted.txt"
 EXPECTED_BINS_FILE="${INDIR}/.expected_bins.txt"
