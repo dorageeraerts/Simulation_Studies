@@ -19,17 +19,17 @@ OUTPUT_CONTAINER="/output"
 
 # --- physics defaults ---
 PHI_OFFSET=136.0 # offset of 136 because phi is w.r.t. absolute North in Mulder
-PHI_MIN=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 150.0 - o}')
-PHI_MAX=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 210.0 - o}')
-EL_MIN=0.
-EL_MAX=40.
+PHI_MIN=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 155.0 - o}')
+PHI_MAX=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 170.0 - o}')
+EL_MIN=10.
+EL_MAX=18.
 DPHI=0.2
 DEL=0.2
-RHO=3.2E3
+RHO=1.5E3
 N_E=10000
-NEVENTS=100
+NEVENTS=10000
 
 # --- chunking / Condor throttling ---
-N_AZ_PER_JOB=5   # az bins grouped into one Condor job (per el)
+N_AZ_PER_JOB=1   # az bins grouped into one Condor job (per el)
 N_JOBS_PER_BIN=1    # MC replicas per chunk
 MAX_IDLE=1000        # Condor max_idle across the whole cluster

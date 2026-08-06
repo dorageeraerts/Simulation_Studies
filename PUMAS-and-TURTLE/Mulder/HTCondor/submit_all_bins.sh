@@ -6,9 +6,10 @@
 #
 # Builds all_jobs.txt, fills in the Condor submit template, submits it,
 # parses the cluster ID straight out of condor_submit's own output, and
-# saves CLUSTER_ID/RUN_TAG/LOGBASE to run_state/ so combine_all_bins.sh
-# can pick them up automatically once you check the jobs have finished
-# (e.g. via condor_q) and run it manually.
+# saves CLUSTER_ID/RUN_TAG/LOGBASE/N_JOBS_PER_BIN/MAX_IDLE to run_state/ so
+# combine_all_bins.sh can pick them up automatically once you check the
+# jobs have finished (e.g. via condor_q) and run it manually - the latter
+# two are needed if it later has to resubmit a job list for missing bins.
 set -e
 
 source muraves_mulder_config.sh
@@ -23,7 +24,7 @@ if [ ! -f run_config.txt ]; then
 fi
 source run_config.txt   # DPHI DEL RHO N_E NEVENTS ...
 
-./generate_job_list.sh "$N_JOBS_PER_BIN"
+./generate_job_list.sh "$N_JOBS_PER_BIN" chunks.txt all_jobs.txt
 
 LOGBASE="/user/dgeeraer/MURAVES/output_mulder/output_htcondor"
 #RUN_TAG="staging_$$_$(date +%s)"
@@ -31,6 +32,11 @@ RUN_TAG="staging_$(date +%Y%m%d_%H%M%S)"
 
 mkdir -p "${LOGBASE}/${RUN_TAG}"
 
+# __CLUSTER_ARG__ -> literal '$(Cluster)' so Condor's own macro resolves
+# per-job as before (a real run always writes each job's output under
+# Condor's own new cluster ID). Resubmission runs (see combine_all_bins.sh)
+# instead fill this with a literal, fixed cluster ID - the original run's -
+# so resubmitted jobs write back into that same output directory.
 sed -e "s|__DPHI__|${DPHI}|g" \
     -e "s|__DEL__|${DEL}|g" \
     -e "s|__RHO__|${RHO}|g" \
@@ -38,6 +44,8 @@ sed -e "s|__DPHI__|${DPHI}|g" \
     -e "s|__NEVENTS__|${NEVENTS}|g" \
     -e "s|__MAX_IDLE__|${MAX_IDLE}|g" \
     -e "s|__RUN_TAG__|${RUN_TAG}|g" \
+    -e "s|__CLUSTER_ARG__|\$(Cluster)|g" \
+    -e "s|__JOBS_FILE__|all_jobs.txt|g" \
     mulder.sub > generated_submit.condor
 
 SUBMIT_OUT=$(condor_submit generated_submit.condor)
@@ -58,6 +66,8 @@ cat > "${RUN_STATE_DIR}/${CLUSTER_ID}.env" <<EOF
 CLUSTER_ID=${CLUSTER_ID}
 RUN_TAG=${RUN_TAG}
 LOGBASE=${LOGBASE}
+N_JOBS_PER_BIN=${N_JOBS_PER_BIN}
+MAX_IDLE=${MAX_IDLE}
 EOF
 ln -sf "${CLUSTER_ID}.env" "${RUN_STATE_DIR}/latest.env"
 
