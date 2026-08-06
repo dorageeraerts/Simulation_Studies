@@ -5,7 +5,14 @@
 # Reads every job file exactly once and buckets rows by (az,el) bin.
 #
 # Usage:
-#   awk -v dphi="$DPHI" -f combine_all_bins.awk expected_bins.txt data_file1 data_file2 ...
+#   awk -v dphi="$DPHI" [-v missing_file=<path>] -f combine_all_bins.awk \
+#       expected_bins.txt data_file1 data_file2 ...
+#
+# expected_bins.txt: "abs_az el local_az" per row. local_az is the
+# pre-PHI_OFFSET value (same units as chunks.txt) so a missing bin can be
+# mapped back to the chunk/job that produced it, for resubmission.
+# If missing_file is given, each missing bin's "local_az el" is appended
+# to it (in addition to the existing human-readable stderr warning).
 
 function idx_of(az) { return sprintf("%.0f", az / dphi) }
 function el_key(el) { return sprintf("%.6f", el + 0) }   # normalize numeric formatting
@@ -15,11 +22,12 @@ BEGIN {
 }
 
 FNR == NR {
-    if (NF < 2) next
-    e_az = $1; e_el = $2
+    if (NF < 3) next
+    e_az = $1; e_el = $2; e_local = $3
     key = idx_of(e_az) SUBSEP el_key(e_el)
     expected[key] = e_az
     expected_el[key] = e_el
+    expected_local[key] = e_local
     next
 }
 
@@ -42,9 +50,11 @@ END {
     missing = 0
     for (k in expected) {
         if (!(k in n)) {
-            split(k, parts, SUBSEP)
             printf "WARNING: bin az=%s el=%s missing or incomplete - skipped\n", \
                 expected[k], expected_el[k] > "/dev/stderr"
+            if (missing_file != "") {
+                printf "%s %s\n", expected_local[k], expected_el[k] >> missing_file
+            }
             missing++
             continue
         }

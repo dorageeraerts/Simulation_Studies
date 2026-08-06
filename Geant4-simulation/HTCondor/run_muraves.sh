@@ -18,10 +18,12 @@ OUTPUT_CONTAINER="/output"
 singularity exec \
     --bind ${G4DATA_HOST}:${G4DATA_CONTAINER},\
 ${OUTPUT_HOST}:${OUTPUT_CONTAINER} \
-    --pwd /user/dgeeraer/MURAVES/Simulation_Studies/Simulation_Dora/build-cont-t2b \
+    --pwd /user/dgeeraer/MURAVES/Simulation_Studies/Geant4-simulation/build-t2b \
     --env GEANT4_DATA_DIR=${G4DATA_CONTAINER} \
     ${SIF_PATH} \
     ./MuravesSim --m run.mac
+
+# old: --pwd /user/dgeeraer/MURAVES/Simulation_Studies/Simulation_Dora/build-cont-t2b \
 
 # Copy output to pnfs
 #echo "Copying output to pnfs..."
