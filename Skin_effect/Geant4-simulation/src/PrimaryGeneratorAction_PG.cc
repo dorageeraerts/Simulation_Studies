@@ -34,17 +34,34 @@ PrimaryGeneratorAction_PG::~PrimaryGeneratorAction_PG()
 
 //----------------------------------------------------------------------------//
 void PrimaryGeneratorAction_PG::GeneratePrimaries(G4Event* anEvent)
+
 { 
-  G4double x = -1*m; 
-  //G4double y = 0; 
-  G4double y = (-53 + 106 * G4UniformRand()) * cm;
-  //G4double z = 0;
-  G4double z = (-80 + 140 * G4UniformRand()) * cm;
+  G4double run1   = 500. * m;
+G4double run2   = 250. * m;
+
+G4double width  = run1 + run2;
+  G4double toeX  = -width / 2.;
+  G4double world_sizeX = 760.*m;
+  G4double world_sizeZ  = 180*m;
   
+  G4double detYZ = 1.0*m;
+  G4double detX  = 1.7*cm;
+  G4double gap_x = 1.7*m;
+  G4double angle1 = 10. * deg;
+
+G4double x1 = -0.5*world_sizeX + 10.0*m;
+G4double x2 = x1 + gap_x;
+
+G4double z2 = -0.5*world_sizeZ + (x2 - toeX)*std::tan(angle1) + 0.51*detYZ;
+  G4double x = x2+1*m; 
+  //G4double y = 0; 
+  G4double y = 0;
+  //G4double z = 0;
+  G4double z = z2;
 
   G4ThreeVector pos(x, y, z); 
 
-  G4double px = 1.; 
+  G4double px = -1.; 
   G4double py = 0; 
   G4double pz = 0;
 

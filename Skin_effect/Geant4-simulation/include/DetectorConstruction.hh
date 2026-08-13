@@ -53,8 +53,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     //const float* GetZPosStationsY() const { return zPosStationY; }
     const std::vector<double>& GetYPosStations() const { return _yPosStations; }
 
+    G4ThreeVector GetKinkPositionLocal() const { return _kinkPosLocal; }
+
   private:
+    G4LogicalVolume* logicDetLayer;
     G4GenericMessenger* _messenger;
+    G4ThreeVector _kinkPosLocal;  // kink position in Flank's local frame
     G4LogicalVolume* barLog = nullptr;
     G4LogicalVolume* topCornerLog = nullptr;
     G4LogicalVolume* leftCornerLog = nullptr;

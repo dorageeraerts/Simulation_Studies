@@ -89,8 +89,8 @@ void PrimaryGeneratorAction_EcoMug::Initialize() {
     // -------- Set limitations on generated muon direction -------- 
     fGenHSphere.SetMinimumTheta(fMinTheta);
     fGenHSphere.SetMaximumTheta(fMaxTheta);
-    fGenHSphere.SetMinimumPhi(fMinPhi);
-    fGenHSphere.SetMaximumPhi(fMaxPhi);
+    //fGenHSphere.SetMinimumPhi(fMinPhi);
+    //fGenHSphere.SetMaximumPhi(fMaxPhi);
 
     // -------- Set limitations on generation position on hemisphere --------
     fGenHSphere.SetHSphereMinPositionTheta(fMinPosTheta);
@@ -145,7 +145,7 @@ void PrimaryGeneratorAction_EcoMug::GeneratePrimaries(G4Event* anEvent)
 	// --- and do this until muon is generated with the azimuthal angle phi of the direction in angular acceptance of detector ---------------
 	if (fMaxPhi < 2*M_PI || fMinPhi > 0.) 
     {
-        G4cout << "initializing while loop for phi-restriction" << G4endl;
+        //G4cout << "initializing while loop for phi-restriction" << G4endl;
         do {
             fGenHSphere.Generate();  // generate a muon
             muon_pos = fGenHSphere.GetGenerationPosition();

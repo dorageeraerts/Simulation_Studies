@@ -86,9 +86,13 @@ class ScintbarHit : public G4VHit
     void SetExitPoint(G4ThreeVector p)  { fExitPoint = p; }
     G4ThreeVector GetExitPoint() const { return fExitPoint; };
 
+    void  SetPanelID(G4int id) { fPanelID = id; }
+    G4int GetPanelID() const   { return fPanelID; }
+
 
   private:
     G4int fStationID;
+    G4int fPanelID = -1;
     G4int fModuleID;
     G4int fBarID;
     G4double fEdep;

@@ -46,7 +46,8 @@ RunAction::RunAction(EventAction* eventAction, PrimaryGeneratorInfo* generatorIn
   analysisManager->SetDefaultFileType("root");
   
   
-  analysisManager->SetFileName("MuravesSim_Data"); 
+  analysisManager->SetFileName("kink_diagnostic"); 
+  //analysisManager->SetFileName("MuravesSim_Data"); 
 
   fDataPath = ".";  // fallback (command will overwrite this)
 
@@ -106,7 +107,7 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
 
   //analysisManager->Reset();
 
-  analysisManager->CreateNtuple("ScatterData", "Event-level information of muon scattering");
+  /*analysisManager->CreateNtuple("ScatterData", "Event-level information of muon scattering");
 
   analysisManager->CreateNtupleDColumn("pIn");
   analysisManager->CreateNtupleDColumn("thetaIn");
@@ -118,12 +119,24 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
 
   analysisManager->CreateNtupleDColumn("scatterAngle");
 
-  analysisManager->FinishNtuple();
+  analysisManager->FinishNtuple();*/
+
+  analysisManager->CreateNtuple("KinkScatter", "Muon steps inside KinkScorer");
+  analysisManager->CreateNtupleIColumn("eventID");        // 0
+  analysisManager->CreateNtupleIColumn("trackID");        // 1
+  analysisManager->CreateNtupleDColumn("dtheta_deg");     // 2
+  analysisManager->CreateNtupleSColumn("process");        // 3
+  analysisManager->CreateNtupleIColumn("isHard");         // 4
+  analysisManager->CreateNtupleDColumn("x_m");            // 5
+  analysisManager->CreateNtupleDColumn("y_m");            // 6
+  analysisManager->CreateNtupleDColumn("z_m");             // 7
+  analysisManager->CreateNtupleDColumn("ekin_GeV");        // 8
+  analysisManager->FinishNtuple(0);
 
   // Creating ntuples
   
-    // tuple Id = 0 --- Primary particle-generation-level: triggering muon---------
-    /*analysisManager->CreateNtuple("PrimaryGenData", "Event-level information of generated primaries");
+    // tuple Id = 1 --- Primary particle-generation-level: triggering muon---------
+    analysisManager->CreateNtuple("PrimaryGenData", "Event-level information of generated primaries");
 
     analysisManager->CreateNtupleIColumn("Event"); // column Id = 0
     
@@ -143,31 +156,28 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/)
     
     analysisManager->FinishNtuple();
 
-     // tuple Id = 1 --- Hit-level: triggering muon ------------------------
-    analysisManager->CreateNtuple("HitData", "Hit-level information of hits in scintillator bars");
+     // tuple Id = 2 --- Hit-level: triggering muon ------------------------
+    // tuple Id = 2 --- Hit-level: triggering muon ------------------------
+    analysisManager->CreateNtuple("HitData", "Hit-level information of hits in detector panels");
 
-    analysisManager->CreateNtupleIColumn("Event"); // column Id = 0
-    
-    //analysisManager->CreateNtupleIColumn("NScintHit"); 
-    analysisManager->CreateNtupleIColumn("ScintHitParentID"); // column Id = 1
-    analysisManager->CreateNtupleDColumn("ScintHitE"); // column Id = 2
-    analysisManager->CreateNtupleDColumn("ScintHitEntryX"); // column Id = 3
-    analysisManager->CreateNtupleDColumn("ScintHitEntryY"); // column Id = 4
-    analysisManager->CreateNtupleDColumn("ScintHitEntryZ"); // column Id = 5
-    analysisManager->CreateNtupleDColumn("ScintHitExitX"); // column Id = 6
-    analysisManager->CreateNtupleDColumn("ScintHitExitY"); // column Id = 7
-    analysisManager->CreateNtupleDColumn("ScintHitExitZ"); // column Id = 8
-    analysisManager->CreateNtupleDColumn("ScintHitPathLength"); // column Id = 9
-    analysisManager->CreateNtupleIColumn("ScintHitStation"); // column Id = 10
-    analysisManager->CreateNtupleIColumn("ScintHitModule"); // column Id = 11
-    analysisManager->CreateNtupleIColumn("ScintHitBar"); // column Id = 12
-    analysisManager->CreateNtupleIColumn("ScintHitPDG"); // column Id = 13
-    analysisManager->CreateNtupleIColumn("ScintHitTrackID"); // column Id = 14
-    analysisManager->CreateNtupleIColumn("ClusterID");         // 15 
-    analysisManager->CreateNtupleIColumn("ProcessID");         // 16
-    analysisManager->CreateNtupleDColumn("ScintHitTime");   // 17
-  
-    analysisManager->FinishNtuple();*/
+    analysisManager->CreateNtupleIColumn("Event");              // 0
+    analysisManager->CreateNtupleIColumn("ScintHitParentID");   // 1
+    analysisManager->CreateNtupleDColumn("ScintHitE");          // 2
+    analysisManager->CreateNtupleDColumn("ScintHitEntryX");     // 3
+    analysisManager->CreateNtupleDColumn("ScintHitEntryY");     // 4
+    analysisManager->CreateNtupleDColumn("ScintHitEntryZ");     // 5
+    analysisManager->CreateNtupleDColumn("ScintHitExitX");      // 6
+    analysisManager->CreateNtupleDColumn("ScintHitExitY");      // 7
+    analysisManager->CreateNtupleDColumn("ScintHitExitZ");      // 8
+    analysisManager->CreateNtupleDColumn("ScintHitPathLength"); // 9
+    analysisManager->CreateNtupleIColumn("ScintHitPanel");      // 10  (was Station/Module/Bar)
+    analysisManager->CreateNtupleIColumn("ScintHitPDG");        // 11
+    analysisManager->CreateNtupleIColumn("ScintHitTrackID");    // 12
+    analysisManager->CreateNtupleIColumn("ClusterID");          // 13
+    analysisManager->CreateNtupleIColumn("ProcessID");          // 14
+    analysisManager->CreateNtupleDColumn("ScintHitTime");       // 15
+
+    analysisManager->FinishNtuple();
 
     // tuple Id = 2 --- Primary particle-generation-level: non-triggering muon ---------
     /*analysisManager->CreateNtuple("PrimaryGenData_NT", "Event-level information of generated primaries");

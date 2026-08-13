@@ -33,6 +33,9 @@
  #include "G4Trap.hh"
 #include <vector>
 
+#include "G4TessellatedSolid.hh"
+#include "G4TriangularFacet.hh"
+
 #include "ScintBarSD.hh"
 #include "Materials.hh"
 
@@ -110,9 +113,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
        
     // ------------------- World -------------------
     
-    G4double world_sizeX = 100.*m;
-    G4double world_sizeY = 30.*m;
-    G4double world_sizeZ  = 20*m;
+    G4double world_sizeX = 760.*m;
+    G4double world_sizeY = 900.*m;
+    G4double world_sizeZ  = 180*m;
     
     G4Box* solidWorld = new G4Box("World", 0.5*world_sizeX, 0.5*world_sizeY, 0.5*world_sizeZ);    
 
@@ -130,7 +133,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 
   // ------ Flank -------
- G4double width  = 100.*m;      // X direction
+ /*G4double width  = 100.*m;      // X direction
  G4double length = 30.*m;      // Y direction
 G4double angle  = 10.*deg;
 
@@ -193,14 +196,245 @@ new G4PVPlacement(
     false,
     0,
     checkOverlaps
+);*/
+
+
+// ============================================================
+// REQUIRED INCLUDES
+// ============================================================
+
+
+
+// ============================================================
+// Flank with kink
+//
+// Near / detector side : 10 degrees
+// Far  / mountain side : 20 degrees
+//
+// Cross-section is in local X-Z plane.
+// Extrusion is along local Y.
+// ============================================================
+
+G4double angle1 = 10. * deg;
+G4double angle2 = 20. * deg;
+
+G4double run1   = 500. * m;
+G4double run2   = 250. * m;
+
+G4double width  = run1 + run2;
+G4double length = 884. * m;
+
+
+// ------------------------------------------------------------
+// Heights
+// ------------------------------------------------------------
+
+G4double kinkHeight = run1 * std::tan(angle1);
+G4double topHeight  = kinkHeight + run2 * std::tan(angle2);
+
+
+// ------------------------------------------------------------
+// X coordinates
+// ------------------------------------------------------------
+
+G4double toeX  = -width / 2.;
+G4double kinkX = toeX + run1;
+G4double topX  =  width / 2.;
+
+
+// ------------------------------------------------------------
+// Y coordinates
+// ------------------------------------------------------------
+
+G4double yFront = -length / 2.;
+G4double yBack  =  length / 2.;
+
+
+// ============================================================
+// Define the four points of the cross-section:
+//
+//        C
+//        *
+//       /|
+//      / |
+//     /  |
+//    D   |
+//    *   |
+//   /    |
+//  /     |
+// A*-----*B
+//
+// A = toe
+// B = far/base
+// C = far/top
+// D = kink
+// ============================================================
+
+// Front (+/- Y) vertices
+
+G4ThreeVector A1(toeX,  yFront, 0.);
+G4ThreeVector B1(topX,  yFront, 0.);
+G4ThreeVector C1(topX,  yFront, topHeight);
+G4ThreeVector D1(kinkX, yFront, kinkHeight);
+
+// Back vertices
+
+G4ThreeVector A2(toeX,  yBack, 0.);
+G4ThreeVector B2(topX,  yBack, 0.);
+G4ThreeVector C2(topX,  yBack, topHeight);
+G4ThreeVector D2(kinkX, yBack, kinkHeight);
+
+
+// ============================================================
+// Create tessellated solid
+// ============================================================
+
+G4TessellatedSolid* solidFlank =
+    new G4TessellatedSolid("Flank");
+
+
+// ============================================================
+// FRONT FACE
+//
+// Polygon A -> B -> C -> D
+//
+// Triangulation:
+//     A-D-B
+//     B-D-C
+//
+// These two triangles exactly reproduce the original
+// concave cross-section.
+// ============================================================
+
+solidFlank->AddFacet(new G4TriangularFacet(A1, B1, D1, ABSOLUTE));
+solidFlank->AddFacet(new G4TriangularFacet(B1, C1, D1, ABSOLUTE));
+
+solidFlank->AddFacet(new G4TriangularFacet(A2, D2, B2, ABSOLUTE));
+solidFlank->AddFacet(new G4TriangularFacet(B2, D2, C2, ABSOLUTE));
+
+solidFlank->AddFacet(new G4TriangularFacet(A1, A2, B2, ABSOLUTE));
+solidFlank->AddFacet(new G4TriangularFacet(A1, B2, B1, ABSOLUTE));
+
+solidFlank->AddFacet(new G4TriangularFacet(B1, B2, C2, ABSOLUTE));
+solidFlank->AddFacet(new G4TriangularFacet(B1, C2, C1, ABSOLUTE));
+
+solidFlank->AddFacet(new G4TriangularFacet(C1, C2, D2, ABSOLUTE));
+solidFlank->AddFacet(new G4TriangularFacet(C1, D2, D1, ABSOLUTE));
+
+solidFlank->AddFacet(new G4TriangularFacet(D1, D2, A2, ABSOLUTE));
+solidFlank->AddFacet(new G4TriangularFacet(D1, A2, A1, ABSOLUTE));
+
+solidFlank->SetSolidClosed(true);
+
+
+// ============================================================
+// Rotation
+// ============================================================
+
+G4RotationMatrix* rot = new G4RotationMatrix();
+
+//rot->rotateX(-90. * deg);
+
+
+// ============================================================
+// Logical volume
+// ============================================================
+
+G4LogicalVolume* logicFlank =
+    new G4LogicalVolume(
+        solidFlank,
+        rock_mat,
+        "flank"
+    );
+
+
+// ============================================================
+// Placement
+// ============================================================
+
+new G4PVPlacement(
+    rot,
+    G4ThreeVector(
+        0.,
+        0.,
+        -0.5 * world_sizeZ
+    ),
+    logicFlank,
+    "Flank",
+    logicWorld,
+    false,
+    0,
+    checkOverlaps
 );
+
+G4double detYZ = 1.0*m;
+G4double detX  = 1.7*cm;
+G4double gap_x = 1.7*m;
+
+G4double x1 = -0.5*world_sizeX + 10.0*m;
+G4double x2 = x1 + gap_x;
+
+G4double z1 = -0.5*world_sizeZ + (x1 - toeX)*std::tan(angle1) + 0.51*detYZ; // 0.51 to avoid overlap
+G4double z2 = -0.5*world_sizeZ + (x2 - toeX)*std::tan(angle1) + 0.51*detYZ;
+
+G4Box* Scint_Box = new G4Box("Scint", 0.5*detX, 0.5*detYZ, 0.5*detYZ);
+logicDetLayer = new G4LogicalVolume(Scint_Box, polystyrene_mat, "DetLayerLogical");
+
+G4RotationMatrix* rotdet = new G4RotationMatrix();
+
+new G4PVPlacement(rotdet, G4ThreeVector(x1, 0., z1),
+                  logicDetLayer, "Panel1", logicWorld, false, 0, checkOverlaps);
+
+new G4PVPlacement(rotdet, G4ThreeVector(x2, 0., z2),
+                  logicDetLayer, "Panel2", logicWorld, false, 1, checkOverlaps);
+                 
+
+
+// ============================================================
+// KinkScorer — thin diagnostic volume embedded just below
+// the rock surface at the kink corner
+// ============================================================
+
+// Footprint around the kink, in Flank's LOCAL frame (same frame
+// as the polygon vertices above — no world z-offset applied here)
+G4double kinkScorerHalfX = 5.0 * m;   // +/- 2 m around kinkX
+G4double kinkScorerHalfY = 25.0 * m;  // +/- 25 m along the ridge (matches EcoMug plane width below)
+G4double kinkScorerHalfZ = 2.0 * m;
+
+// Terrain height varies across the footprint (near side is shallower,
+// far side is steeper), so find the lowest local surface height within
+// the footprint and sit comfortably below it, to stay fully embedded.
+G4double hNear = (kinkX - kinkScorerHalfX - toeX) * std::tan(angle1); // near edge, x < kinkX
+G4double hFar  = kinkHeight + kinkScorerHalfX * std::tan(angle2);      // far edge, x > kinkX
+G4double minSurfaceHeight = std::min(hNear, hFar);
+
+G4double kinkScorerTopZ = minSurfaceHeight - 0.01 * m;                 // small safety margin
+G4double kinkScorerCenterZ = kinkScorerTopZ - kinkScorerHalfZ;
+
+_kinkPosLocal = G4ThreeVector(kinkX, 0., kinkScorerCenterZ);
+
+G4Box* solidKinkScorer = new G4Box("KinkScorer",
+                                    kinkScorerHalfX, kinkScorerHalfY, kinkScorerHalfZ);
+
+G4LogicalVolume* logicKinkScorer =
+    new G4LogicalVolume(solidKinkScorer, rock_mat, "KinkScorer");
+
+new G4PVPlacement(
+    nullptr,               // no rotation, same frame as Flank
+    _kinkPosLocal,          // position relative to Flank's local origin
+    logicKinkScorer,
+    "KinkScorer",
+    logicFlank,             // <-- mother is Flank, not World
+    false,
+    0,
+    checkOverlaps);         // safe to leave true — it's genuinely contained
 
 // ----- Scoring volume -----
 
 // ------------------- Slope scoring layer -------------------
 
 // Same dimensions as flank
-G4double scorerThickness = 1.*mm;
+/*G4double scorerThickness = 1.*mm;
 
 // Outward shift to avoid overlap with rock
 G4ThreeVector scorerOffset(
@@ -272,7 +506,7 @@ new G4PVPlacement(
     false,
     0,
     checkOverlaps
-);
+);*/
 
   // ------------------- visualization attributes -------------------
 
@@ -287,6 +521,9 @@ new G4PVPlacement(
     G4VisAttributes* greencol = new G4VisAttributes(G4Colour(0.,1.0,0.,0.4));
     G4VisAttributes* bluecol = new G4VisAttributes(G4Colour(0.,0.,0.8,0.5));
 
+    G4VisAttributes* flankcol = new G4VisAttributes(G4Colour(0.66,0.45,0.33,0.5));
+    flankcol->SetForceSolid(true);
+
     //logicAlFoil->SetVisAttributes(bluecol);
     //logicAlShell->SetVisAttributes(cyancol);
     //logicTEC->SetVisAttributes(greencol);
@@ -298,10 +535,11 @@ new G4PVPlacement(
     new G4VisAttributes(
         G4Colour(0.,1.,0.,0.5)
     );
-
+ 
 scorerVis->SetForceSolid(true);
 
-logicSlopeScorer->SetVisAttributes(scorerVis);
+//logicSlopeScorer->SetVisAttributes(scorerVis);
+logicFlank->SetVisAttributes(flankcol);
      
   auto barVis = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0, 0.4)); 
   barVis->SetForceSolid(true);  // fill volume color
@@ -319,11 +557,11 @@ logicSlopeScorer->SetVisAttributes(scorerVis);
 
 void DetectorConstruction::ConstructSDandField()
 {
-  /*auto sdManager = G4SDManager::GetSDMpointer();
+  auto sdManager = G4SDManager::GetSDMpointer();
   G4String SDname;
   auto Scintbars = new ScintbarSD(SDname="/Scintbars");
   sdManager->AddNewDetector(Scintbars);
-  barLog->SetSensitiveDetector(Scintbars);*/
+  logicDetLayer->SetSensitiveDetector(Scintbars);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -50,46 +50,40 @@ G4bool ScintbarSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 
   if (edep == 0. && stepLen == 0.) return false;
 
-  // StationNo X0: 0; Y0: 8;
-  //           X1: 1; Y1: 9;
-  //           X2: 2; Y2: 10;
-  //           X3: 3; Y3: 11;
-  G4int BarCopyNo  = touchable->GetVolume()->GetCopyNo();
-  G4int BarNo      = (BarCopyNo & 0xFF);
-  G4int ModuleNo   = (BarCopyNo >> 8)  & 0xF;
-  G4int StationNo  = (BarCopyNo >> 12) & 0xF;
-  G4int trackID    = track->GetTrackID();
+  // Panel1 -> copy number 0, Panel2 -> copy number 1 (see DetectorConstruction)
+  G4int PanelID = touchable->GetVolume()->GetCopyNo();
+  //G4cout << "PanelID" << PanelID << G4endl;
+  G4int trackID = track->GetTrackID();
 
-  // Search for existing hit for this track-bar-combintation in this event
+  // Search for existing hit for this track-panel combination in this event
+  // (one hit per muon per panel, energy summed across all its steps in that panel)
   ScintbarHit* hit = nullptr;
   for (size_t i = 0; i < fHitsCollection->entries(); i++) {
     auto* h = (*fHitsCollection)[i];
-    if (h->GetTrackID()   == trackID  &&
-        h->GetStationID() == StationNo &&
-        h->GetModuleID()  == ModuleNo  &&
-        h->GetBarID()     == BarNo) {
+    if (h->GetTrackID()  == trackID &&
+        h->GetPanelID()  == PanelID) {
       hit = h;
       break;
     }
   }
 
-  if (!hit) { // if particle has no entry yet for that certain bar-module-station combination
+  if (!hit) { // no entry yet for this track-panel combination
     if (edep == 0.) {
-      // No energy deposited yet, cache geometric entry point but don't create hit (probably the new hit could be created already, I just try to be memory efficient)
-      fEntryPointMap[{trackID, BarCopyNo}] = prestep->GetPosition();
+      // No energy deposited yet, cache geometric entry point but don't
+      // create the hit yet (memory efficiency, same as before)
+      fEntryPointMap[{trackID, PanelID}] = prestep->GetPosition();
       return false;
     }
 
     hit = new ScintbarHit();
-    hit->SetBarID(BarNo);
-    hit->SetModuleID(ModuleNo);
-    hit->SetStationID(StationNo);
+    hit->SetPanelID(PanelID);
+    G4cout << "Creating hit for track " << trackID << " in panel " << PanelID << G4endl;
     hit->SetTrackID(trackID);
     hit->SetPDGcode(track->GetDefinition()->GetPDGEncoding());
     hit->SetParentId(track->GetParentID());
     hit->SetHitTime(prestep->GetGlobalTime());
 
-    auto key = std::make_pair(trackID, BarCopyNo);
+    auto key = std::make_pair(trackID, PanelID);
     auto it  = fEntryPointMap.find(key);
     if (it != fEntryPointMap.end()) {
       hit->SetEntryPoint(it->second);
@@ -103,12 +97,11 @@ G4bool ScintbarSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 
   hit->AddEdep(edep);
 
-  if (stepLen > 0.) { // maybe this check unnecessary
+  if (stepLen > 0.) {
     hit->AddPathLength(stepLen);
     hit->SetExitPoint(poststep->GetPosition());
   }
   return true;
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

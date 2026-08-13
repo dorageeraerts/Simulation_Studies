@@ -12,22 +12,14 @@ class MySteppingAction : public G4UserSteppingAction {
 public:
     MySteppingAction(EventAction* eventAction);
     ~MySteppingAction() override;
-    void UserSteppingAction(const G4Step*) override;
-    void Reset() { fSteps = 0; }
-    void ResetScorerHits()
-{
-    fScorerHits = 0;
-}
+    void UserSteppingAction(const G4Step* step) override;
+    
 private:
     G4int fSteps = 0;
     G4int fLastEventID = -1; 
     EventAction* fEventAction = nullptr;
 
-    G4ThreeVector incomingMomentum;
-    G4ThreeVector outgoingMomentum;
-
-    G4bool muonEntered;
-    G4int fScorerHits;
+    G4double fHardScatterThreshold;
 };
 
 #endif

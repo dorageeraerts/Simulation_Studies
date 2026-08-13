@@ -43,6 +43,7 @@
 #include "MuSimPhysicsList.hh"
 #include "RunInformation.hh"
 #include "QGSP_BERT.hh"
+#include "G4EmStandardPhysics_option4.hh"
 
 //#include "G4MPImanager.hh"
 //#include "G4MPIsession.hh"
@@ -180,6 +181,7 @@ theRunManager->SetNumberOfThreads(nThreads);
   // ************** CHECK PHYSICS LIST FROM CRY GEANT4 EXAMPLE, it doesn't fully work at the moment ***********************
   //PhysicsList* thePhysicsList = new PhysicsList;   
   auto thePhysicsList = new FTFP_BERT;
+  thePhysicsList->ReplacePhysics(new G4EmStandardPhysics_option4());
   //auto thePhysicsList = new CosMuSimPhysicsList;
   //auto thePhysicsList = new PhysicsList;
   thePhysicsList->SetVerboseLevel(1);
