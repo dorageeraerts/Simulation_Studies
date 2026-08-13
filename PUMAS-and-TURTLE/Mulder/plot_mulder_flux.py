@@ -58,7 +58,7 @@ def edges_from_centers(values):
     return np.concatenate([values - step / 2, [values[-1] + step / 2]])
 
 
-def plot_map(df, column, title, label, filename, cmap="viridis"):
+def plot_map(df, column, title, label, filename, cmap="viridis", vertical=None):
     grid = df.pivot(index="theta_bin", columns="phi_bin", values=column)
 
     phi_vals = grid.columns.values
@@ -78,6 +78,10 @@ def plot_map(df, column, title, label, filename, cmap="viridis"):
 
     ax.set_xlabel("Azimuth φ [deg]", loc="right")
     ax.set_ylabel("Elevation θ [deg]", loc="top")
+
+    if vertical:
+        for v in vertical:
+            ax.axvline(v, color="mediumvioletred", linestyle="--", linewidth=1)
     ax.set_title(title)
     
     ax.minorticks_on()
@@ -95,6 +99,7 @@ def main():
     parser.add_argument("input_path", type=str, help="Path to the Mulder output .txt file")
     parser.add_argument("--output_path", type=str, default="images",
                          help="Base output directory (default: 'images')")
+    parser.add_argument("--vertical", type=float, nargs="+", default=None, help="One or more phi values [deg] to draw as vertical reference lines")
     args = parser.parse_args()
 
     filename = args.input_path
@@ -155,10 +160,10 @@ def main():
     plot_map(
         df_deg,
         "flux_rock",
-        f"Rock transmitted muon flux (density {params['rho']} kg/cm3, 1°x1° bins)",
+        f"Vesuvius (density {params['rho']} kg/m3, 1°x1° bins, discrete mode)",
         r"Flux [$\mathrm{m^{-2}\,s^{-1}\,sr^{-1}}$]",
         outfile_FS,
-        cmap="viridis",
+        cmap="viridis", vertical=args.vertical
     )
 
     # ==========================================================
@@ -167,10 +172,10 @@ def main():
     plot_map(
         df_deg,
         "flux_open",
-        f"Open sky MCEq flux (density {params['rho']} kg/cm3, 1°x1° bins)",
+        f"Open sky (MCEq, 1°x1° bins, discrete mode)",
         r"Flux [$\mathrm{m^{-2}\,s^{-1}\,sr^{-1}}$]",
         outfile_Ves,
-        cmap="viridis",
+        cmap="viridis", vertical=args.vertical
     )
 
     # ==========================================================
@@ -179,10 +184,10 @@ def main():
     plot_map(
         df_deg,
         "transmission",
-        f"Muon transmission (density {params['rho']} kg/cm3, 1°x1° bins)",
+        f"Muon transmission (density {params['rho']} kg/m3, 1°x1° bins, discrete mode)",
         "Transmission",
         outfile_transmission,
-        cmap="viridis",
+        cmap="viridis", vertical=args.vertical
     )
 
 
