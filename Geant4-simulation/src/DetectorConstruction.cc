@@ -281,9 +281,9 @@ if (_detType == "triangular") {
 
     // 4. Build the stations -------------------
     double posFirstBarMod0 = -((float) _nBars -0.5) * _barBase / 2.; //position of first bar (i.e., bar at most-negative coordinate)
-    //G4cout << "[MuravesDetector::Construct] -((float) _nBars -0.5) * _barBase / 2. = " << -((float) _nBars -0.5) * _barBase / 2. << G4endl;
+    G4cout << "[MuravesDetector::Construct] -((float) _nBars -0.5) * _barBase / 2. = " << -((float) _nBars -0.5) * _barBase / 2. << G4endl;
     double posFirstBarMod1 = posFirstBarMod0 + (_nBars) * _barBase/2. ;
-    //G4cout << "[MuravesDetector::Construct] posFirstBarMod0 + (_nBars) * _barBase/2. = " << -((float) _nBars -0.5) * _barBase / 2.+ (_nBars) * _barBase/2. << G4endl;
+    G4cout << "[MuravesDetector::Construct] posFirstBarMod0 + (_nBars) * _barBase/2. = " << -((float) _nBars -0.5) * _barBase / 2.+ (_nBars) * _barBase/2. << G4endl;
     
     double posFirstBar[] = {posFirstBarMod0,posFirstBarMod1};
 
@@ -434,6 +434,8 @@ if (_detType == "triangular") {
           
           barName.str("");
 
+           G4cout << "[CONSTRUCT: Bar position]: Station" << iStation << ": " << posFirstBar[iModule] + (iBar+0.5) * (_barBase) << "(barNo" << 2*iBar + 1 << ")" << G4endl;
+
           G4cout << "[CONSTRUCT: Bar boundaries]: Station" << iStation << ": " << _zPosStations[iStation] + zOffset << G4endl;
           G4cout << "[CONSTRUCT: Bar boundaries]: Station" << iStation << ": " << _zPosStations[iStation] - zOffset << G4endl;
 
@@ -463,6 +465,8 @@ if (_detType == "triangular") {
               checkOverlaps);
           
         barName.str("");
+
+        G4cout << "[CONSTRUCT: Bar position]: Station" << iStation << ": " << posFirstBar[iModule] + (iBar) * (_barBase) << "(barNo" << 2 * iBar << ")" << G4endl;
 
         G4ThreeVector barPos(posFirstBar[iModule] + (iBar) * (_barBase),_yPosStations[iStation],_zPosStations[iStation] - zOffset);
 
@@ -686,7 +690,7 @@ new G4PVPlacement(0,
       logicWorld,                //its mother  volume
       false,                   //no boolean operation
       0,                       //copy number
-      checkOverlaps);          //overlaps checking
+      checkOverlaps);         //overlaps checking
 
       G4cout << "[Construct: shift]" << _AlShellHeight << G4endl;
       G4cout << "[Construct: shift]" << _zPosStations[1]<< G4endl;

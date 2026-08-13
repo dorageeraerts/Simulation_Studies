@@ -43,7 +43,7 @@ using namespace chrono;
 
 PrimaryGeneratorAction_EcoMug::PrimaryGeneratorAction_EcoMug(const std::string& inputFile): 
 G4VUserPrimaryGeneratorAction(), fParticleGun(0), mu_plus(0), mu_minus(0),
-  fMinTheta(0.), fMaxTheta(M_PI/2), fMinPhi(0.), fMaxPhi(2*M_PI),
+  fMinTheta(0.), fMaxTheta(M_PI/2), fMinPhi(0.), fMaxPhi(2*M_PI), fMinMom(0.01), fMaxMom(1000.),
   fMinPosTheta(0.), fMaxPosTheta(M_PI/2), fMinPosPhi(0.), fMaxPosPhi(2*M_PI), genHSphere(true), customFlux(true), fHorizontalRate(138*(EMUnits::hertz/EMUnits::m2)),
   fHSphereRadius(150*cm), fHSphereCenter({56.45*cm,0*cm,-48.5*cm}), fSkyCenter({0.,0.,0.}), fSkySize({1.*m,1.*m}), seedEcomug(-1)
 { 
@@ -89,14 +89,18 @@ void PrimaryGeneratorAction_EcoMug::Initialize() {
     // -------- Set limitations on generated muon direction -------- 
     fGenHSphere.SetMinimumTheta(fMinTheta);
     fGenHSphere.SetMaximumTheta(fMaxTheta);
-    fGenHSphere.SetMinimumPhi(fMinPhi);
-    fGenHSphere.SetMaximumPhi(fMaxPhi);
+    //fGenHSphere.SetMinimumPhi(fMinPhi);
+    //fGenHSphere.SetMaximumPhi(fMaxPhi);
 
     // -------- Set limitations on generation position on hemisphere --------
     fGenHSphere.SetHSphereMinPositionTheta(fMinPosTheta);
 	fGenHSphere.SetHSphereMaxPositionTheta(fMaxPosTheta);
     fGenHSphere.SetHSphereMinPositionPhi(fMinPosPhi);
     fGenHSphere.SetHSphereMaxPositionPhi(fMaxPosPhi);
+
+    // -------- Set limitations on generated muon momentum -------- 
+    fGenHSphere.SetMinimumMomentum(fMinMom);
+    fGenHSphere.SetMaximumMomentum(fMaxMom);
 
     fGenHSphere.SetHorizontalRate(fHorizontalRate * EMUnits::hertz/EMUnits::m2);
 
@@ -305,6 +309,8 @@ void PrimaryGeneratorAction_EcoMug::ReadConfigFile(const std::string& filename) 
         else if (key == "sky_center_x")     { fSkyCenter[0] = val * cm; }
         else if (key == "sky_center_y")     { fSkyCenter[1] = val * cm; }
         else if (key == "sky_center_z")     { fSkyCenter[2] = val * cm; }
+        else if (key == "min_momentum")     { fMinMom = val * GeV; }
+        else if (key == "max_momentum")     { fMaxMom = val * GeV; }
     }
 }
 
