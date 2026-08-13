@@ -38,6 +38,7 @@
 using namespace std;
 using namespace chrono;
 #define DEG_TO_RAD(deg) ((deg) * M_PI / 180.0)
+EMLog::TLogLevel EMLog::ReportingLevel = WARNING;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -69,6 +70,7 @@ G4VUserPrimaryGeneratorAction(), fParticleGun(0), mu_plus(0), mu_minus(0),
 PrimaryGeneratorAction_EcoMug::~PrimaryGeneratorAction_EcoMug()
 {  
     delete fParticleGun;
+    delete fGenSuite;
 }
 
 void PrimaryGeneratorAction_EcoMug::Initialize() {
@@ -110,6 +112,30 @@ void PrimaryGeneratorAction_EcoMug::Initialize() {
             return this->J(p, theta);
         });
     }
+
+    if (fUseBackground && !fBckPID.empty()) {
+    std::vector<EcoMug> bckGenerators;
+    bckGenerators.reserve(fBckPID.size());
+
+    for (std::size_t i = 0; i < fBckPID.size(); ++i) {
+        // Clone the signal generator's geometry/cuts via the copy constructor
+        EcoMug bck(fGenHSphere);
+        // Give the background its own flux parameterisation.
+        // Swap this out per-species if you need different J's per background.
+        bck.SetDifferentialFlux([this](double p, double theta) {
+            return this->Jbck(p, theta);
+        });
+        bckGenerators.push_back(bck);
+    }
+
+    fGenSuite = new EMMultiGen(fGenHSphere, bckGenerators);
+    fGenSuite->SetBckWeights(fBckWeights);
+    fGenSuite->SetBckPID(fBckPID);
+
+    G4cout << "EMMultiGen configured with " << fBckPID.size()
+           << " background species." << G4endl;
+}
+
 }
 
 // Parameterise Guan's flux (EcoMug uses m-2 sr-1 s-1 GeV-1)
@@ -138,86 +164,50 @@ G4double PrimaryGeneratorAction_EcoMug::J(G4double p, G4double theta)
 };
 
 void PrimaryGeneratorAction_EcoMug::GeneratePrimaries(G4Event* anEvent)
-{	
-	G4double muon_phi;
-    G4double muon_theta;
-    G4double muon_ptot;
-    G4double muon_charge;
+{
+    G4double muon_phi, muon_theta, muon_ptot;
     std::array<double,3> muon_pos;
+    G4int pdg;
 
-	// ------------- Generate a muon from the custom flux parameterisation on the hemisphere ---------------
-	// --- and do this until muon is generated with the azimuthal angle phi of the direction in angular acceptance of detector ---------------
-	if (fMaxPhi < 2*M_PI || fMinPhi > 0.) 
+    if (fMaxPhi < 2*M_PI || fMinPhi > 0.)
     {
-        G4cout << "initializing while loop for phi-restriction" << G4endl;
         do {
-            fGenHSphere.Generate();  // generate a muon
-            muon_pos = fGenHSphere.GetGenerationPosition();
-            muon_ptot = fGenHSphere.GetGenerationMomentum() * GeV;
-            muon_theta = fGenHSphere.GetGenerationTheta();
-            muon_phi = fGenHSphere.GetGenerationPhi();
-            muon_charge = fGenHSphere.GetCharge();
+            pdg = GenerateOneEvent(muon_pos, muon_ptot, muon_theta, muon_phi);
 
-            // Convert the desired range (-angle, angle) to (0, 2pi) for comparison
-            // Window 1: around 0
             double phi0_min = 0.0;
             double phi0_max = fMaxPhi;
-            double phi0_min_wrapped = 2*M_PI - fMaxPhi; // equivalent of -angle
-
-            // Window 2: around pi
+            double phi0_min_wrapped = 2*M_PI - fMaxPhi;
             double phi_pi_min = M_PI - fMaxPhi;
             double phi_pi_max = M_PI + fMaxPhi;
 
             bool in_window0 = (muon_phi >= phi0_min && muon_phi <= phi0_max) ||
-                            (muon_phi >= phi0_min_wrapped && muon_phi < 2*M_PI);
-
+                               (muon_phi >= phi0_min_wrapped && muon_phi < 2*M_PI);
             bool in_window_pi = (muon_phi >= phi_pi_min && muon_phi <= phi_pi_max);
 
-            if (in_window0 || in_window_pi) {
-                break; // phi in either desired window
-            }
-        break;
-        } while (true); // repeat until muon_phi is in range
+            if (in_window0 || in_window_pi) break;
+        } while (true);
     }
     else {
-        fGenHSphere.Generate();  // generate a muon
-        muon_pos = fGenHSphere.GetGenerationPosition();
-        muon_ptot = fGenHSphere.GetGenerationMomentum() * GeV;
-        muon_theta = fGenHSphere.GetGenerationTheta();
-        muon_phi = fGenHSphere.GetGenerationPhi();
-        muon_charge = fGenHSphere.GetCharge();
+        pdg = GenerateOneEvent(muon_pos, muon_ptot, muon_theta, muon_phi);
     }
-	
-	//auto analysisManager = G4AnalysisManager::Instance();
-	//analysisManager->FillH1(0, muon_theta);  // histogram ID 0
 
-	//G4double muon_phi_hist = muon_phi;
-	//if (muon_phi_hist > M_PI)
-	//{muon_phi_hist -= 2*M_PI;} 
+    G4ParticleDefinition* particle = G4ParticleTable::GetParticleTable()->FindParticle(pdg);
+    if (!particle) {
+        G4cerr << "PrimaryGeneratorAction_EcoMug: unknown PDG code " << pdg
+               << ", defaulting to mu-" << G4endl;
+        particle = mu_minus;
+    }
+    fParticleGun->SetParticleDefinition(particle);
 
-    //analysisManager->FillH1(1, muon_phi);    // histogram ID 1
-	//analysisManager->FillH1(2, muon_pos[0]);    // histogram ID 1
-	//analysisManager->FillH1(3, muon_pos[1]);    // histogram ID 1
-	//analysisManager->FillH1(4, muon_pos[2]);    // histogram ID 1
+    G4double a = sin(muon_theta)*cos(muon_phi);
+    G4double b = sin(muon_theta)*sin(muon_phi);
+    G4double c = cos(muon_theta);
 
-	G4double a = sin(muon_theta)*cos(muon_phi);
-	G4double b = sin(muon_theta)*sin(muon_phi);
-	G4double c = cos(muon_theta);
+    fParticleGun->SetParticlePosition(G4ThreeVector(muon_pos[0], muon_pos[1], muon_pos[2]));
+    fParticleGun->SetParticleMomentumDirection(G4ParticleMomentum(a, b, c));
+    fParticleGun->SetParticleMomentum(muon_ptot * GeV); // single conversion, correct mass via `particle`
 
-	fParticleGun->SetParticlePosition(G4ThreeVector(muon_pos[0], muon_pos[1], muon_pos[2]));
-	fParticleGun->SetParticleMomentumDirection(G4ParticleMomentum(a, b, c)); 
-
-	G4double E;
-	E = sqrt(muon_ptot*muon_ptot+0.10566*0.10566); // muon mass = 105.66 MeV = 0.10566 GeV
-	fParticleGun->SetParticleEnergy(E); 
-		
-	if (muon_charge > 0) 
-    {fParticleGun->SetParticleDefinition(mu_plus);}
-	else 
-    {fParticleGun->SetParticleDefinition(mu_minus);}
-	
-	fParticleGun->GeneratePrimaryVertex(anEvent);
-	
+    fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
 std::string PrimaryGeneratorAction_EcoMug::GetInfoSummary() const {
@@ -286,6 +276,17 @@ void PrimaryGeneratorAction_EcoMug::ReadConfigFile(const std::string& filename) 
     if (key == "seed") {
         long seedVal;
         if (iss >> seedVal) { seedEcomug = seedVal; }
+    if (key == "use_background") {
+        double val;
+        if (iss >> val) fUseBackground = static_cast<bool>(val);
+    }
+    else if (key == "bck_species") {
+        int pid; double w;
+        if (iss >> pid >> w) {
+            fBckPID.push_back(pid);
+            fBckWeights.push_back(w);
+        }
+    }
     } else {
         double val;
         if (!(iss >> val)) continue; 
@@ -316,4 +317,29 @@ void PrimaryGeneratorAction_EcoMug::ReadConfigFile(const std::string& filename) 
 
     infile.close();
     G4cout << "EcoMug configuration loaded from " << filename << G4endl;
+}
+
+G4int PrimaryGeneratorAction_EcoMug::GenerateOneEvent(
+    std::array<double,3>& pos, G4double& ptot, G4double& theta, G4double& phi)
+{
+    if (fUseBackground && fGenSuite) {
+        fGenSuite->Generate();
+        pos   = fGenSuite->GetGenerationPosition();
+        ptot  = fGenSuite->GetGenerationMomentum(); // GeV/c
+        theta = fGenSuite->GetGenerationTheta();
+        phi   = fGenSuite->GetGenerationPhi();
+        return fGenSuite->GetPID();                 // signed PDG code
+    } else {
+        fGenHSphere.Generate();
+        pos   = fGenHSphere.GetGenerationPosition();
+        ptot  = fGenHSphere.GetGenerationMomentum();
+        theta = fGenHSphere.GetGenerationTheta();
+        phi   = fGenHSphere.GetGenerationPhi();
+        return (fGenHSphere.GetCharge() > 0) ? 13 : -13; // fold into mu+/mu- PDG
+    }
+}
+
+G4double PrimaryGeneratorAction_EcoMug::Jbck(G4double p, G4double theta)
+{
+    return this->J(p, theta); // or a genuinely different background parameterisation
 }
