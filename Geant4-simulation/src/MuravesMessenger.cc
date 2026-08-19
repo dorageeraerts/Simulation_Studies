@@ -10,7 +10,7 @@
 MuravesMessenger* MuravesMessenger::fgInstance = 0;
 
 MuravesMessenger::MuravesMessenger()
-  :primarygenerator("EcoMug")
+  :primarygenerator("CRY")
 {
   fgInstance = this;
 
