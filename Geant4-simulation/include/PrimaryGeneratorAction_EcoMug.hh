@@ -39,6 +39,7 @@ class PrimaryGeneratorAction_EcoMug : public G4VUserPrimaryGeneratorAction, publ
     G4double fMinPosTheta, fMaxPosTheta;
     G4double fMinPhi, fMaxPhi;
     G4double fMinPosPhi, fMaxPosPhi;
+    G4double fMinMom, fMaxMom;
     G4double fHorizontalRate;
     mutable G4double rateHSphere, errorHSphere;
     mutable G4double genSurfaceArea;
@@ -78,6 +79,16 @@ class PrimaryGeneratorAction_EcoMug : public G4VUserPrimaryGeneratorAction, publ
     G4double E_in;
     G4double pathlength;
     G4double J(G4double p, G4double theta); // flux parameterisation
+
+    // -------- Background generation (EMMultiGen) --------
+      bool fUseBackground = false;
+      std::vector<G4int>    fBckPID;      // PDG codes for background species
+      std::vector<G4double> fBckWeights;  // relative weights w.r.t. signal
+      EMMultiGen* fGenSuite = nullptr;    // owns internal copies of signal + backgrounds
+
+      // Optional: differential flux for backgrounds, if different from signal's J
+      G4double Jbck(G4double p, G4double theta);
+      G4int GenerateOneEvent(std::array<double,3>&, G4double&, G4double&, G4double&);
 
     //MuravesMessenger* fMessenger;
 };

@@ -23,20 +23,24 @@
 #include "vector"
 #include "RNGWrapper.hh"
 #include "PrimaryGeneratorMessenger.hh"
+#include "PrimaryGeneratorInfo.hh"
 
 class G4Event;
 class G4ParticleGun;
 
-class PrimaryGeneratorAction_CRY : public G4VUserPrimaryGeneratorAction
+class PrimaryGeneratorAction_CRY : public G4VUserPrimaryGeneratorAction, public PrimaryGeneratorInfo
 {
 public:
   PrimaryGeneratorAction_CRY(const char * filename);
   ~PrimaryGeneratorAction_CRY();
-  void GeneratePrimaries(G4Event* anEvent);
+  void GeneratePrimaries(G4Event* anEvent) override;
 
   void InputCRY();
   void UpdateCRY(std::string* MessInput);
   void CRYFromFile(G4String newValue);
+
+   virtual std::string GetGeneratorName() const override {return "CRY";}
+  virtual std::string GetInfoSummary() const override;
 
 private:
   std::vector<CRYParticle*> *vect; // vector of generated particles
