@@ -88,6 +88,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
     float zPosStationY[4];
     float yPosStation[4];
 
+    G4double _frontCenterY, _backCenterY; // local-Y (=world Z, vertical) center of the entry/exit plates
+    G4double _plateZMax, _plateZMin;   // outer edge (local Z) of the front-most / back-most physical plate
+    G4double _plateHalfXY;             // true transverse half-extent of a bar layer (not the padded container)
+    G4double _accMarginXY;             // additive margin (mm) — catches tracks that would "probably slightly miss"
+    G4double _worldOffsetX; 
+
     // Rotation matrices to place bars
     G4RotationMatrix *_rotUpperX;
     G4RotationMatrix *_rotLowerX;

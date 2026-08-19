@@ -47,9 +47,9 @@ void ActionInitialization::Build() const
   else if ( generator == "GPS" )
     //SetUserAction(new PrimaryGeneratorAction_GPS());
     fGeneratorInfo = new PrimaryGeneratorAction_GPS();
-  //else if ( generator == "CRY" )
+  else if ( generator == "CRY" )
      //SetUserAction(new PrimaryGeneratorAction_CRY("cmd-dora.file"));
-     //fGeneratorInfo = new PrimaryGeneratorAction_CRY();
+     fGeneratorInfo = new PrimaryGeneratorAction_CRY("setup_test.file");
   else if ( generator == "EcoMug" )
      //SetUserAction(new PrimaryGeneratorAction_EcoMug());
      fGeneratorInfo = new PrimaryGeneratorAction_EcoMug(fEcoMugFile);

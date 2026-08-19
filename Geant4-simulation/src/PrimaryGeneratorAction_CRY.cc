@@ -26,14 +26,21 @@ PrimaryGeneratorAction_CRY::PrimaryGeneratorAction_CRY(const char *inputfile)
   particleGun = new G4ParticleGun();
 
   // Determine CRY data directory path
-  char *str;
+  /*char *str;
   std::string dataString("");
   if ((str = getenv("CRYDATAPATH")) != NULL) {
     dataString += std::string(str);
   }
   else {
     dataString += std::string("../data");
-  }
+  }*/
+
+  char *str;
+  std::string dataString("");
+
+dataString = CRY_DATA_PATH;
+
+G4cout << "CRY data directory: " << dataString << G4endl;
 
   // Read the cry input file
   std::ifstream inputFile;
@@ -41,7 +48,7 @@ PrimaryGeneratorAction_CRY::PrimaryGeneratorAction_CRY(const char *inputfile)
   char buffer[1000];
 
   if (inputFile.fail()) {
-    if( *inputfile !=0)  //....only complain if a filename was given
+    if(inputfile &&  *inputfile !=0)  //....only complain if a filename was given
       G4cout << "PrimaryGeneratorAction: Failed to open CRY input file= "
 	     << inputfile << G4endl;
     InputState=-1;
@@ -52,7 +59,7 @@ PrimaryGeneratorAction_CRY::PrimaryGeneratorAction_CRY(const char *inputfile)
       setupString.append(" ");
     }
 
-    cout << "CRY data directory: " << dataString << endl;
+    G4cout << "CRY data directory: " << dataString << G4endl;
     
     //CRYSetup *setup=new CRYSetup(setupString,"../data");
     CRYSetup *setup=new CRYSetup(setupString, dataString);
@@ -77,6 +84,10 @@ PrimaryGeneratorAction_CRY::PrimaryGeneratorAction_CRY(const char *inputfile)
 //----------------------------------------------------------------------------//
 PrimaryGeneratorAction_CRY::~PrimaryGeneratorAction_CRY()
 {
+    delete particleGun;
+    delete vect;
+    delete gunMessenger;
+    delete gen; 
 }
 
 //----------------------------------------------------------------------------//
@@ -88,14 +99,19 @@ void PrimaryGeneratorAction_CRY::InputCRY()
 //----------------------------------------------------------------------------//
 void PrimaryGeneratorAction_CRY::UpdateCRY(std::string* MessInput)
 {
-  char *str;
+  /*char *str;
   std::string dataString("");
   if ((str = getenv("CRYDATAPATH")) != NULL) {
     dataString += std::string(str);
   }
   else {
     dataString += std::string("../data");
-  }
+  }*/
+
+  char *str;
+std::string dataString("");
+
+dataString = CRY_DATA_PATH;
   
   //CRYSetup *setup=new CRYSetup(*MessInput,"../data");
   CRYSetup *setup=new CRYSetup(*MessInput, dataString);
@@ -112,14 +128,19 @@ void PrimaryGeneratorAction_CRY::UpdateCRY(std::string* MessInput)
 //----------------------------------------------------------------------------//
 void PrimaryGeneratorAction_CRY::CRYFromFile(G4String newValue)
 {
-  char *str;
+  /*char *str;
   std::string dataString("");
   if ((str = getenv("CRYDATAPATH")) != NULL) {
     dataString += std::string(str);
   }
   else {
     dataString += std::string("../data");
-  }
+  }*/
+
+  char *str;
+std::string dataString("");
+
+dataString = CRY_DATA_PATH;
   
   // Read the cry input file
   std::ifstream inputFile;
@@ -160,15 +181,50 @@ void PrimaryGeneratorAction_CRY::GeneratePrimaries(G4Event* anEvent)
   }
   G4String particleName;
 
-  G4bool InAcceptance=false;
+  auto _rotX = new G4RotationMatrix();
+  _rotX->rotateY(-90 * deg);
+
+  G4double tStart = gen->timeSimulated();
+
+  // only generate showers containing at least one muon that lands inside the
+  // detector's acceptance (otherwise the whole shower is rejected)
+  G4bool accepted = false;
+  do {
+    // free any particles from a rejected shower before overwriting vect
+    for (auto* p : *vect) delete p;
+    vect->clear();
+
+    gen->genEvent(vect);
+
+    for (auto* p : *vect) {
+      G4int pdg = p->PDGid();
+      /*if (pdg != 13 && pdg != -13) continue; // only muons can trigger acceptance
+
+      G4ThreeVector ppos(p->x()*m, p->y()*m, (p->z()+2.)*m);
+      G4ThreeVector pmom(p->u(), p->v(), p->w());
+      ppos.transform(*_rotX);
+      pmom.transform(*_rotX);
+
+      if (theDetector->IsInsideAcceptance(ppos, pmom)) {
+        accepted = true;
+        break; // accept the WHOLE shower, not just this muon*/
+
+    if (pdg == 13 || pdg == -13) {
+      accepted = true;
+      break;
+      }
+    }
+  } while (!accepted);
+
+  G4double elapsedRealTime = gen->timeSimulated() - tStart; // seconds of real exposure for this event
 
   //  auto mydetector = G4RunManager::GetRunManager()->GetUserDetectorConstruction();
 
-  vect->clear();
-  gen->genEvent(vect);
+  //vect->clear();
+  //gen->genEvent(vect);
 
-  auto _rotX = new G4RotationMatrix();
-  _rotX->rotateX(-90 * deg);
+  //auto _rotX = new G4RotationMatrix();
+  //_rotX->rotateX(-90 * deg);
   
   //....debug output
   G4cout << "\nEvent=" << anEvent->GetEventID() << " "
@@ -188,12 +244,12 @@ void PrimaryGeneratorAction_CRY::GeneratePrimaries(G4Event* anEvent)
 
     // rotate from CRY to Geant4 xyz reference system
     ppos.transform(*_rotX);
-    pmom.transform(*_rotX);
+    //pmom.transform(*_rotX);
     
     particleName=CRYUtils::partName((*vect)[j]->id());
 
     //....debug output  
-    cout << "  "          << particleName << " "
+    G4cout << "  "          << particleName << " "
          << "charge="      << (*vect)[j]->charge() << " "
          << setprecision(4)
          << "energy (MeV)=" << (*vect)[j]->ke() << " "
@@ -203,7 +259,7 @@ void PrimaryGeneratorAction_CRY::GeneratePrimaries(G4Event* anEvent)
          << " " << "direction cosines "
          << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), (*vect)[j]->w())
 	 << " " << pmom
-         << endl;
+         << G4endl;
 
     // inside acceptance ?
     //    if ( theDetector->IsInsideAcceptance( G4ThreeVector((*vect)[j]->x(), (*vect)[j]->y(), (*vect)[j]->z()),
@@ -212,13 +268,21 @@ void PrimaryGeneratorAction_CRY::GeneratePrimaries(G4Event* anEvent)
       G4cout << "Yes, inside acceptance !" << endl;
     }
     
-    particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
+    //particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
+    G4ParticleDefinition* pdef = particleTable->FindParticle((*vect)[j]->PDGid());
+    if (!pdef) {
+        G4cerr << "PrimaryGeneratorAction_CRY: unknown PDG code "
+              << (*vect)[j]->PDGid() << ", skipping particle" << G4endl;
+        delete (*vect)[j];
+        continue;
+    }
+    particleGun->SetParticleDefinition(pdef);
     particleGun->SetParticleEnergy(((*vect)[j]->ke())*MeV);
     //particleGun->SetParticlePosition(G4ThreeVector((*vect)[j]->x()*m, (*vect)[j]->y()*m, (*vect)[j]->z()*m));
     particleGun->SetParticlePosition(ppos);
     //particleGun->SetParticleMomentumDirection(G4ThreeVector((*vect)[j]->u(), (*vect)[j]->v(), (*vect)[j]->w()));
     particleGun->SetParticleMomentumDirection(pmom);
-    particleGun->SetParticleTime((*vect)[j]->t());
+    particleGun->SetParticleTime((*vect)[j]->t()*s);
     particleGun->GeneratePrimaryVertex(anEvent);
     //G4cout << "Particle position readback: " << particleGun->GetParticlePosition() << G4endl;
     //G4cout << "Particle energy readback: " << particleGun->GetParticleEnergy() << G4endl;
@@ -226,4 +290,10 @@ void PrimaryGeneratorAction_CRY::GeneratePrimaries(G4Event* anEvent)
   }
   G4cout << "CRY particle generated" << endl;
   delete _rotX;
+  vect->clear();
+}
+
+std::string PrimaryGeneratorAction_CRY::GetInfoSummary() const
+{
+    return "CRY cosmic-ray generator info summary not implemented yet";
 }
