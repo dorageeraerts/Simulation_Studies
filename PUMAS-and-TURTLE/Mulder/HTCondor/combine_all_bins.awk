@@ -13,6 +13,17 @@
 # mapped back to the chunk/job that produced it, for resubmission.
 # If missing_file is given, each missing bin's "local_az el" is appended
 # to it (in addition to the existing human-readable stderr warning).
+#
+# --- Fix: n=1 error -----------------------------------------------------
+# When only ONE job/replica lands in a bin (N_JOBS_PER_BIN=1, or a
+# resubmission only recovers one of several expected replicas), the
+# across-replica sample standard error is undefined for n=1, and this
+# used to just write 0 - silently claiming a perfect measurement. Now
+# each contributing line's own error (columns 4 and 7 - the simulation's
+# own reported statistical error for that single run) is tracked, and
+# used directly whenever a bin ends up with exactly one contributing job,
+# instead of a variance-based SEM.
+# -------------------------------------------------------------------------
 
 function idx_of(az) { return sprintf("%.0f", az / dphi) }
 function el_key(el) { return sprintf("%.6f", el + 0) }   # normalize numeric formatting
@@ -44,6 +55,10 @@ FNR == NR {
     nev[key]       += $8
     az_val[key]     = az
     el_val[key]     = el
+    # remember this line's own error - if n[key] ends up at 1, this is
+    # what gets reported instead of a bogus 0.
+    last_fr_err[key] = $4
+    last_tr_err[key] = $7
 }
 
 END {
@@ -63,13 +78,20 @@ END {
         mfr = sum_fr[k]/ni
         mtr = sum_tr[k]/ni
 
-        vfr = (ni > 1) ? (sumsq_fr[k] - ni*mfr*mfr)/(ni-1) : 0
-        vtr = (ni > 1) ? (sumsq_tr[k] - ni*mtr*mtr)/(ni-1) : 0
-        if (vfr < 0) vfr = 0
-        if (vtr < 0) vtr = 0
-
-        semfr = (ni > 1) ? sqrt(vfr)/sqrt(ni) : 0
-        semtr = (ni > 1) ? sqrt(vtr)/sqrt(ni) : 0
+        if (ni > 1) {
+            vfr = (sumsq_fr[k] - ni*mfr*mfr)/(ni-1)
+            vtr = (sumsq_tr[k] - ni*mtr*mtr)/(ni-1)
+            if (vfr < 0) vfr = 0
+            if (vtr < 0) vtr = 0
+            semfr = sqrt(vfr)/sqrt(ni)
+            semtr = sqrt(vtr)/sqrt(ni)
+        } else {
+            # only one job contributed to this bin: use the simulation's
+            # own reported MC error for that single run, not a
+            # variance-based SEM (undefined, and wrongly 0, for n=1).
+            semfr = last_fr_err[k]
+            semtr = last_tr_err[k]
+        }
 
         printf "%s %s %.6e %.6e %.6e %.6e %.6e %d\n", \
             az_val[k], el_val[k], mfr, semfr, flux_open[k], mtr, semtr, nev[k]
