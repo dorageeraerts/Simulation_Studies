@@ -135,11 +135,11 @@ def main():
     )
 
     # Rebin 0.2 degree bins -> 1 degree bins
-    df["phi_bin"] = np.floor(df["phi"])
-    df["theta_bin"] = np.floor(df["theta"])
+    #df["phi_bin"] = np.floor(df["phi"])
+    #df["theta_bin"] = np.floor(df["theta"])
 
-    #df["phi_bin"] = df["phi"]
-    #df["theta_bin"] = df["theta"]
+    df["phi_bin"] = df["phi"]
+    df["theta_bin"] = df["theta"]
 
     df_deg = (
         df.groupby(["theta_bin", "phi_bin"], as_index=False)
@@ -162,7 +162,7 @@ def main():
         "flux_rock",
         f"Vesuvius (density {params['rho']} kg/m3, 1°x1° bins, discrete mode)",
         r"Flux [$\mathrm{m^{-2}\,s^{-1}\,sr^{-1}}$]",
-        outfile_FS,
+        outfile_Ves,
         cmap="viridis", vertical=args.vertical
     )
 
@@ -174,7 +174,7 @@ def main():
         "flux_open",
         f"Open sky (MCEq, 1°x1° bins, discrete mode)",
         r"Flux [$\mathrm{m^{-2}\,s^{-1}\,sr^{-1}}$]",
-        outfile_Ves,
+        outfile_FS,
         cmap="viridis", vertical=args.vertical
     )
 
