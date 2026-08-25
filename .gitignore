@@ -8,3 +8,4 @@ generated_submit.condor
 *.png
 *.xml
 *.env
+.DS_Store
