@@ -104,7 +104,7 @@ print(f"Observation altitude: {topo:.2f} m")
 # Energy grid
 # ==============================================================
 
-E_min = 0.9
+E_min = 0.1
 E_max = 3000.0
 n_E = args.n_E
 
