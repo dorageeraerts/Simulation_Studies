@@ -14,7 +14,7 @@
 SIF_PATH="/user/dgeeraer/MURAVES/mulder-container.sif"
 DATA_PATH_HOST="/user/dgeeraer/MURAVES/Simulation_Studies/PUMAS-and-TURTLE/Mulder/"
 DATA_PATH_CONTAINER="/data/"
-OUTPUT_HOST="/user/dgeeraer/MURAVES/output_mulder"
+OUTPUT_HOST="/user/dgeeraer/MURAVES/output_mulder/energy_range"
 OUTPUT_CONTAINER="/output"
 
 # --- physics defaults ---
@@ -27,9 +27,9 @@ DPHI=0.2
 DEL=0.2
 RHO=1.5E3
 N_E=10000
-NEVENTS=10000
+NEVENTS=100
 
 # --- chunking / Condor throttling ---
-N_AZ_PER_JOB=1   # az bins grouped into one Condor job (per el)
+N_AZ_PER_JOB=5   # az bins grouped into one Condor job (per el)
 N_JOBS_PER_BIN=1    # MC replicas per chunk
 MAX_IDLE=1000        # Condor max_idle across the whole cluster
