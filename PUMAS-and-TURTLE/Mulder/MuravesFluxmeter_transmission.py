@@ -14,6 +14,8 @@ import os
 import argparse
 import numpy as np
 import mulder
+import pyarrow as pa
+import pyarrow.parquet as pq
 
 
 # ==============================================================
@@ -153,15 +155,38 @@ outfile = os.path.join(
     f"flux_5m_{args.d_phi}bin_rho{args.rho}_discrete_100T_{args.tag}.txt"
 )
 
+muon_outfile = os.path.join(
+    args.output_path,
+    f"muons_5m_{args.d_phi}bin_rho{args.rho}_discrete_{args.tag}.parquet"
+)
+
 
 N_EVENTS = args.nEvents
+
+muon_schema = pa.schema([
+    ("azimuth_bin", pa.int64()),
+    ("elevation_bin", pa.int64()),
+    ("energy_bin", pa.int64()),
+    ("event", pa.int64()),
+    ("incoming_azimuth", pa.float64()),
+    ("incoming_elevation", pa.float64()),
+    ("incoming_energy", pa.float64()),
+    ("outgoing_azimuth", pa.float64()),
+    ("outgoing_elevation", pa.float64()),
+    ("outgoing_energy", pa.float64()),
+    ("transport_weight", pa.float64()),
+])
 
 
 # ==============================================================
 # Main calculation
 # ==============================================================
 
-with open(outfile, "w") as ffile:
+with open(outfile, "w") as ffile, pq.ParquetWriter(
+    muon_outfile,
+    muon_schema,
+    compression="zstd",
+) as muon_writer:
 
     #ffile.write("# azimuth elevation " "phi_rock phi_rock_err " "phi_open transmission transmission_err " "N_events\n")
     for i, az in enumerate(az_vals):
@@ -206,6 +231,24 @@ with open(outfile, "w") as ffile:
             flux_ref = np.asarray(fluxmeter.reference.flux(s_ref))
 
             weight = np.asarray(s_ref.weight)
+
+            # Mulder transports backwards from the observation state: s_obs is
+            # the outgoing detector state and s_ref is the inferred incoming state.
+            n_rows = n_E * N_EVENTS
+            muon_data = {
+                "azimuth_bin": np.full(n_rows, i, dtype=np.int64),
+                "elevation_bin": np.full(n_rows, j, dtype=np.int64),
+                "energy_bin": np.repeat(np.arange(n_E, dtype=np.int64), N_EVENTS),
+                "event": np.tile(np.arange(N_EVENTS, dtype=np.int64), n_E),
+                "incoming_azimuth": np.asarray(s_ref.azimuth).reshape(-1),
+                "incoming_elevation": np.asarray(s_ref.elevation).reshape(-1),
+                "incoming_energy": np.asarray(s_ref.energy).reshape(-1),
+                "outgoing_azimuth": np.repeat(np.asarray(s_obs.azimuth), N_EVENTS),
+                "outgoing_elevation": np.repeat(np.asarray(s_obs.elevation), N_EVENTS),
+                "outgoing_energy": np.repeat(np.asarray(s_obs.energy), N_EVENTS),
+                "transport_weight": weight.reshape(-1),
+            }
+            muon_writer.write_table(pa.table(muon_data, schema=muon_schema))
 
             values = flux_ref * weight
    
@@ -258,6 +301,10 @@ with open(outfile, "w") as ffile:
             )
 
 print(
-    f"Finished. Output written to: {outfile}",
+    f"Finished. Flux output written to: {outfile}",
+    flush=True
+)
+print(
+    f"Muon states written to: {muon_outfile}",
     flush=True
 )
