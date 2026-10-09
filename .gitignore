@@ -5,3 +5,4 @@ build-cont-t2b/
 *.png
 *.txt
 .DS_Store
+*.xml
