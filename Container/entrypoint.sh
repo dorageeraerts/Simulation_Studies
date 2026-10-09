@@ -46,13 +46,6 @@ fi
 # -----------------------------
 # Launch interactive shell
 # -----------------------------
-<<<<<<< Updated upstream:docker-singularity/entrypoint.sh
 echo "[INFO] Container ready. Tools available in /opt"
-exec bash -l
-
-
-=======
-
 echo "Current working directory: $PWD"
 exec bash -l
->>>>>>> Stashed changes:Container/entrypoint.sh
