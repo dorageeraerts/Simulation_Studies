@@ -1,1 +1,17 @@
+# Build directories
+build/
+build-t2b/
+build*/
+
+# Generated files
+*.svg
+*.png
+*.xml
+*.asc
+*.txt
+
+# macOS
+.DS_Store
+
+# Large container image
 Container/muraves-sim-latest.sif
