@@ -7,4 +7,5 @@ generated_submit.condor
 *.err
 *.png
 *.xml
+*.DS_Store
 *.env
