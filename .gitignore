@@ -1,3 +1,8 @@
 build/
 build-cont/
 build-cont-t2b/
+*.xml
+*.svg
+*.png
+*.txt
+.DS_Store
