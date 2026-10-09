@@ -19,11 +19,21 @@ from pathlib import Path
 
 import pandas as pd
 
-# Run-number ranges per flag. Each flag maps to a list of (start, end) tuples,
-# both inclusive.
+# Run-number ranges per detector and flag.
+# Each range is given as an inclusive (start, end) tuple.
 RUN_RANGES = {
-    "VES": [(2500, 5600), (7894, 11990)],
-    "FS": [(5636, 7893)],
+    "NERO": {
+        "VES": [(2500, 5600), (7894, 11990)],
+        "FS": [(5636, 7893)],
+    },
+    "ROSSO": {
+        "VES": [(4000, 10060), (13458, 14792)],
+        "FS": [(10061, 13457)],
+    },
+    "BLU": {
+        "VES": [(2800, 8818)],
+        "FS": [(8819, 9925)],
+    },
 }
 
 KEYS_TO_KEEP = ["Theta_3p", "Theta_4p", "Phi_3p", "Phi_4p"]
@@ -34,14 +44,14 @@ DEFAULT_DATA_DIR = (
 FILENAME_TEMPLATE = "MURAVES_AnalyzedData_run{run}.jsonl"
 
 
-def iter_run_numbers(flag: str):
+def iter_run_numbers(detector: str, flag: str):
     """Yield every run number in the range(s) associated with `flag`."""
-    for start, end in RUN_RANGES[flag]:
+    for start, end in RUN_RANGES[detector][flag]:
         yield from range(start, end + 1)
 
 
 def load_and_filter(
-    data_dir: Path, flag: str, threshold: float, verbose: bool = True
+    data_dir: Path, detector: str, flag: str, threshold: float, verbose: bool = True
 ):
     """Read all available jsonl files for `flag`, apply the chi2 cut,
     and return a single concatenated, filtered DataFrame."""
@@ -49,7 +59,7 @@ def load_and_filter(
     n_found = 0
     n_missing = 0
 
-    for run in iter_run_numbers(flag):
+    for run in iter_run_numbers(detector, flag):
         file_path = data_dir / FILENAME_TEMPLATE.format(run=run)
         if not file_path.is_file():
             n_missing += 1
@@ -104,6 +114,11 @@ def main():
         help="Which dataset to process: FS (free sky) or VES (vesuvius).",
     )
     parser.add_argument(
+            "detector",
+            choices=["ROSSO", "BLU", "NERO"],
+            help="Which detector data to process: BLU, NERO or ROSSO.",
+        )
+    parser.add_argument(
         "--threshold",
         type=float,
         default=2,
@@ -119,7 +134,7 @@ def main():
         "--output",
         type=str,
         default=None,
-        help="Output JSON file path (default: <flag>_filtered.json in the data dir).",
+        help="Output JSON file path (default: <detector>_<flag>_filtered.json in the data dir).",
     )
     args = parser.parse_args()
 
@@ -127,13 +142,13 @@ def main():
     output_path = (
         Path(args.output)
         if args.output
-        else data_dir / f"{args.flag}_filtered.json"
+        else data_dir / f"{args.detector}_{args.flag}_filtered.json"
     )
 
     # If the given/derived output path is an existing directory, write the
     # default filename inside it instead of failing.
     if output_path.is_dir():
-        output_path = output_path / f"{args.flag}_filtered.json"
+        output_path = output_path / f"{args.detector}_{args.flag}_filtered.json"
 
     # Make sure the parent directory exists.
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -142,7 +157,7 @@ def main():
     print(f"Data directory: {data_dir}")
     print(f"Chi-square threshold: {args.threshold}")
 
-    result_df = load_and_filter(data_dir, args.flag, args.threshold)
+    result_df = load_and_filter(data_dir, args.detector, args.flag, args.threshold)
 
     print(f"Total selected entries: {len(result_df)}")
 
