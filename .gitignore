@@ -4,6 +4,7 @@ build-cont-t2b/
 *.txt
 generated_submit.condor
 *.log
+*.svg
 *.err
 *.png
 *.xml
