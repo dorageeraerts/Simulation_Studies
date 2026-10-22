@@ -130,11 +130,11 @@ def main():
     )
 
     # Rebin 0.2 degree bins -> 1 degree bins
-    df["phi_bin"] = np.floor(df["phi"])
-    df["theta_bin"] = np.floor(df["theta"])
+    #df["phi_bin"] = np.floor(df["phi"])
+    #df["theta_bin"] = np.floor(df["theta"])
 
-    #df["phi_bin"] = df["phi"]
-    #df["theta_bin"] = df["theta"]
+    df["phi_bin"] = df["phi"]
+    df["theta_bin"] = df["theta"]
 
     df_deg = (
         df.groupby(["theta_bin", "phi_bin"], as_index=False)
