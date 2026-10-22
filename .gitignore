@@ -8,3 +8,15 @@ generated_submit.condor
 *.png
 *.xml
 *.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Regenarble caches and outputs
+*_cache/
+*.pdf
+*.csv
+*.json
+*.parquet
+images/
