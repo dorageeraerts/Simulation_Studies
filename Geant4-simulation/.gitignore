@@ -1,2 +1,6 @@
 .vscode/
 .DS_Store
+build/
+build-cont/
+build-cont-t2b/
+build-t2b/
