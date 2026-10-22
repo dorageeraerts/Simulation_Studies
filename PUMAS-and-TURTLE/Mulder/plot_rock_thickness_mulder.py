@@ -55,43 +55,6 @@ longitude = 14.411708
 rock = geometry.layers[0]
 altitude = rock.altitude(latitude, longitude)
 
-# Point the camera roughly at the crater/mountain: pick a pointing
-# azimuth/elevation for the center of your field of view.
-frame = mulder.LocalFrame(
-    latitude=latitude,
-    longitude=longitude,
-    altitude=altitude,
-    azimuth=44.0,     # pointing direction of the detector, deg from North
-    elevation=20.0,   # central elevation angle of the field of view, deg
-)
-
-# Method 1: Use Camera from Mulder (but I find it hard to set the desired range this way, so I use Method 2)
-'''
-# ==============================================================
-# Camera
-# ==============================================================
-resolution = (200, 300)   # (rows, cols) = (height, width)
-camera = frame.camera(resolution, fov=90)  # full field of view, deg
-pixels = camera.pixels
-
-print("azimuth range:", pixels.azimuth.min(), pixels.azimuth.max())
-print("elevation range:", pixels.elevation.min(), pixels.elevation.max())
-
-# ==============================================================
-# Rock thickness scan, one call for the whole image
-# ==============================================================
-thickness = geometry.scan(
-    latitude=latitude,
-    longitude=longitude,
-    altitude=altitude,
-    azimuth=pixels.azimuth,
-    elevation=pixels.elevation,
-    output="thickness",
-)[..., 0]   # layer 0 = "Rock"
-'''
-
-# Method 2: Set range (and thus, pixels) yourself
-
 az = np.arange(args.phi_min, args.phi_max, args.d_phi)   
 el = np.arange(args.el_min, args.el_max, args.d_el)                    
 AZ, EL = np.meshgrid(az, el)   
@@ -117,12 +80,8 @@ outfile = os.path.join(
 # Mask air as white
 masked_thickness = ma.masked_where(thickness < 1e-6, thickness)
 
-
 cmap = plt.cm.inferno.copy()
 cmap.set_bad(color="white")   # color for masked (air) pixels
-
-
-
 
 fig, ax = plt.subplots(figsize=(10, 6))
 

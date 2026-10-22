@@ -12,6 +12,7 @@ Calculates:
 
 import os
 import argparse
+import time
 import numpy as np
 import mulder
 
@@ -44,7 +45,7 @@ parser.add_argument("--input-path", type=str, default="./")
 
 args = parser.parse_args()
 
-
+t0 = time.perf_counter()
 # ==============================================================
 # Geometry
 # ==============================================================
@@ -71,7 +72,8 @@ geometry = mulder.EarthGeometry(
 # ==============================================================
 
 fluxmeter = mulder.Fluxmeter(
-    geometry=geometry
+    geometry=geometry,
+    #physics=mulder.Physics(cutoff=0.01)
 )
 
 fluxmeter.mode = "discrete"
@@ -260,4 +262,8 @@ with open(outfile, "w") as ffile:
 print(
     f"Finished. Output written to: {outfile}",
     flush=True
+)
+
+print(
+    f"Time passed: {time.perf_counter()-t0:.2f} s"
 )

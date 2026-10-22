@@ -133,25 +133,28 @@ E_min = (a / b) * (np.expm1(b * X))      # GeV
 # ==============================================================
 # 4. Plot
 # ==============================================================
-fig, axes = plt.subplots(3, 1, sharex=True, figsize=(9, 10))
+fig, axes = plt.subplots(2, 1, sharex=True, figsize=(9, 10))
 
-ax0, ax1, ax2 = axes
+ax0, ax1= axes
 
 ax0.plot(el_flux, flux_rock, "o-", ms=3, color="tab:blue")
 ax0.set_yscale("log")
-ax0.set_ylabel(r"Flux [$\mathrm{m^{-2}\,s^{-1}\,sr^{-1}}$]")
-ax0.set_title(f"Azimuth = {args.az:.1f} deg  |  rho = {args.rho:.3g} kg/m3")
+ax0.set_ylabel(r"Flux [$\mathrm{m^{-2}\,s^{-1}\,sr^{-1}}$]", loc="top")
+ax0.set_title(f"Azimuth = {args.az:.1f}° , density {args.rho:.3g} kg/m3")
 ax0.grid(alpha=0.3, which="both")
 
 ax1.plot(el_fine, thickness, "-", color="tab:orange")
-ax1.set_ylabel("Rock thickness [m]")
+ax1.set_ylabel("Rock thickness [m]", loc="top")
 ax1.grid(alpha=0.3)
+ax1.set_xlabel("Elevation [deg]", loc="right")
+ax1.grid(alpha=0.3, which="both")
+#ax1.minorticks_on()
 
-ax2.plot(el_fine, E_min, "-", color="tab:green")
-ax2.set_yscale("log")
-ax2.set_ylabel(r"Estimated $E_{\min}$ [GeV]")
-ax2.set_xlabel("Elevation [deg]", loc="right")
-ax2.grid(alpha=0.3, which="both")
+#ax2.plot(el_fine, E_min, "-", color="tab:green")
+#ax2.set_yscale("log")
+#ax2.set_ylabel(r"Estimated $E_{\min}$ [GeV]")
+#ax2.set_xlabel("Elevation [deg]", loc="right")
+#ax2.grid(alpha=0.3, which="both")
 
 plt.tight_layout()
 plt.savefig(image_path, dpi=200)
