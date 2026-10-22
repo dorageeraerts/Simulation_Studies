@@ -20,3 +20,6 @@ __pycache__/
 *.json
 *.parquet
 images/
+*.npz
+*.grib
+*.nc
