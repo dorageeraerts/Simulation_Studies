@@ -164,17 +164,17 @@ muon_outfile = os.path.join(
 N_EVENTS = args.nEvents
 
 muon_schema = pa.schema([
-    ("azimuth_bin", pa.int64()),
-    ("elevation_bin", pa.int64()),
-    ("energy_bin", pa.int64()),
-    ("event", pa.int64()),
-    ("incoming_azimuth", pa.float64()),
-    ("incoming_elevation", pa.float64()),
-    ("incoming_energy", pa.float64()),
-    ("outgoing_azimuth", pa.float64()),
-    ("outgoing_elevation", pa.float64()),
-    ("outgoing_energy", pa.float64()),
-    ("transport_weight", pa.float64()),
+    ("azimuth_bin", pa.int32()),
+    ("elevation_bin", pa.int32()),
+    ("energy_bin", pa.int32()),
+    ("event", pa.int32()),
+    ("incoming_azimuth", pa.float32()),
+    ("incoming_elevation", pa.float32()),
+    ("incoming_energy", pa.float32()),
+    ("outgoing_azimuth", pa.float32()),
+    ("outgoing_elevation", pa.float32()),
+    ("outgoing_energy", pa.float32()),
+    ("transport_weight", pa.float32()),
 ])
 
 

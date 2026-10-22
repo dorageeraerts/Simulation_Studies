@@ -65,6 +65,7 @@ PHI_MIN_ABS=$(awk -v phi="$PHI_MIN" -v off="$PHI_OFFSET" 'BEGIN {printf "%.0f", 
 PHI_MAX_ABS=$(awk -v phi="$PHI_MAX" -v off="$PHI_OFFSET" 'BEGIN {printf "%.0f", phi + off}')
 
 FINAL="${INDIR}/flux_all_bins_phi${PHI_MIN_ABS}-${PHI_MAX_ABS}_el${EL_MIN}-${EL_MAX}_dphi${DPHI}_del${DEL}_rho${RHO}_nE${N_E}_nEvents${NEVENTS}_$(date +%d%m%y).txt"
+MUON_FINAL="${INDIR}/muons_all_bins_phi${PHI_MIN_ABS}-${PHI_MAX_ABS}_el${EL_MIN}-${EL_MAX}_dphi${DPHI}_del${DEL}_rho${RHO}_nE${N_E}_nEvents${NEVENTS}_$(date +%d%m%y).parquet"
 
 UNSORTED="${INDIR}/.flux_all_bins_unsorted.txt"
 EXPECTED_BINS_FILE="${INDIR}/.expected_bins.txt"
@@ -85,10 +86,17 @@ awk -v off="$PHI_OFFSET" '
 # naming ever changes -- must match what run_bin_job.sh actually writes.
 shopt -s nullglob
 DATA_FILES=( "${INDIR}"/flux_5m_*bin_rho*_discrete_100T_az*_job*.txt )
+PARQUET_FILES=( "${INDIR}"/muons_5m_*_az*_job*.parquet )
 shopt -u nullglob
 
 if [ ${#DATA_FILES[@]} -eq 0 ]; then
     echo "ERROR: no job output files found in $INDIR" >&2
+    exit 1
+fi
+
+if [ ${#PARQUET_FILES[@]} -ne ${#DATA_FILES[@]} ]; then
+    echo "ERROR: found ${#DATA_FILES[@]} text job files but ${#PARQUET_FILES[@]} parquet job files in $INDIR" >&2
+    echo "A job output is incomplete; do not combine the parquet files yet." >&2
     exit 1
 fi
 
@@ -176,5 +184,21 @@ if [ ! -s "$FINAL" ] || [ "$MISSING" -gt 0 ] || [ "$ACTUAL_BINS" -ne "$EXPECTED_
     exit 1
 fi
 
+PARQUET_BASENAMES=()
+for parquet_file in "${PARQUET_FILES[@]}"; do
+    PARQUET_BASENAMES+=( "${parquet_file##*/}" )
+done
+
+echo "Combining ${#PARQUET_BASENAMES[@]} parquet job files into $MUON_FINAL" >&2
+singularity exec \
+    --bind "${INDIR}:/parquet_output" \
+    --bind "${DATA_PATH_HOST}:${DATA_PATH_CONTAINER}" \
+    "${SIF_PATH}" \
+    mamba run -n muraves-mulder python /data/HTCondor/combine_parquet.py \
+    --input-dir /parquet_output \
+    --output "/parquet_output/${MUON_FINAL##*/}" \
+    "${PARQUET_BASENAMES[@]}"
+
 echo "All $EXPECTED_BINS bins present - cleaning up intermediate files, keeping only $FINAL"
 find "$INDIR" -maxdepth 1 -name 'flux_5m_*_job*.txt' -delete
+find "$INDIR" -maxdepth 1 -name 'muons_5m_*_job*.parquet' -delete

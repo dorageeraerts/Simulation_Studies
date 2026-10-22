@@ -11,25 +11,25 @@
 # `condor_submit`'s output for combine_all_bins.sh - see submit_all_bins.sh).
 
 # --- container / paths ---
-SIF_PATH="/user/dgeeraer/MURAVES/mulder-container.sif"
+SIF_PATH="/user/dgeeraer/MURAVES/mulder-container-pyarrow.sif"
 DATA_PATH_HOST="/user/dgeeraer/MURAVES/Simulation_Studies/PUMAS-and-TURTLE/Mulder/"
 DATA_PATH_CONTAINER="/data/"
-OUTPUT_HOST="/user/dgeeraer/MURAVES/output_mulder/energy_range"
+OUTPUT_HOST="/user/dgeeraer/MURAVES/output_mulder/discrete"
 OUTPUT_CONTAINER="/output"
 
 # --- physics defaults ---
 PHI_OFFSET=136.0 # offset of 136 because phi is w.r.t. absolute North in Mulder
 PHI_MIN=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 155.0 - o}')
-PHI_MAX=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 170.0 - o}')
-EL_MIN=10.
-EL_MAX=18.
+PHI_MAX=$(awk -v o="$PHI_OFFSET" 'BEGIN {print 210.0 - o}')
+EL_MIN=0.
+EL_MAX=25.
 DPHI=0.2
 DEL=0.2
-RHO=1.5E3
+RHO=2.65E3
 N_E=10000
 NEVENTS=100
 
 # --- chunking / Condor throttling ---
-N_AZ_PER_JOB=5   # az bins grouped into one Condor job (per el)
+N_AZ_PER_JOB=10   # az bins grouped into one Condor job (per el)
 N_JOBS_PER_BIN=1    # MC replicas per chunk
 MAX_IDLE=1000        # Condor max_idle across the whole cluster
