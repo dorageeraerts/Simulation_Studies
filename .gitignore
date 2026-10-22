@@ -26,3 +26,4 @@ images/
 *.grib
 *.nc
 PUMAS-and-TURTLE/Mulder/HTCondor/run_state/
+Double_ratio/old/muraves_chi2_plots/
