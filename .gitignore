@@ -2,7 +2,7 @@ build/
 build-cont/
 build-cont-t2b/
 *.txt
-!CmakeLists.txt
+!CMakeLists.txt
 generated_submit.condor
 *.log
 *.err
