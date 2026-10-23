@@ -8,3 +8,7 @@ generated_submit.condor
 *.png
 *.xml
 *.env
+!CMakeLists.txt
+.DS_Store
+.vscode/
+PUMAS-and-TURTLE/Mulder/mulder_output/
