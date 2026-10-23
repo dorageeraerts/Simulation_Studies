@@ -26,21 +26,7 @@ PrimaryGeneratorAction_CRY::PrimaryGeneratorAction_CRY(const char *inputfile)
   particleGun = new G4ParticleGun();
 
   // Determine CRY data directory path
-  /*char *str;
-  std::string dataString("");
-  if ((str = getenv("CRYDATAPATH")) != NULL) {
-    dataString += std::string(str);
-  }
-  else {
-    dataString += std::string("../data");
-  }*/
-
-  char *str;
-  std::string dataString("");
-
-dataString = CRY_DATA_PATH;
-
-G4cout << "CRY data directory: " << dataString << G4endl;
+  std::string dataString = CRY_DATA_PATH;
 
   // Read the cry input file
   std::ifstream inputFile;
@@ -84,10 +70,15 @@ G4cout << "CRY data directory: " << dataString << G4endl;
 //----------------------------------------------------------------------------//
 PrimaryGeneratorAction_CRY::~PrimaryGeneratorAction_CRY()
 {
-    delete particleGun;
+  delete gunMessenger;
+  if (vect) {
+    for (auto* particle : *vect) {
+      delete particle;
+    }
     delete vect;
-    delete gunMessenger;
-    delete gen; 
+  }
+  delete particleGun;
+  delete gen;
 }
 
 //----------------------------------------------------------------------------//
@@ -99,19 +90,7 @@ void PrimaryGeneratorAction_CRY::InputCRY()
 //----------------------------------------------------------------------------//
 void PrimaryGeneratorAction_CRY::UpdateCRY(std::string* MessInput)
 {
-  /*char *str;
-  std::string dataString("");
-  if ((str = getenv("CRYDATAPATH")) != NULL) {
-    dataString += std::string(str);
-  }
-  else {
-    dataString += std::string("../data");
-  }*/
-
-  char *str;
-std::string dataString("");
-
-dataString = CRY_DATA_PATH;
+  std::string dataString = CRY_DATA_PATH;
   
   //CRYSetup *setup=new CRYSetup(*MessInput,"../data");
   CRYSetup *setup=new CRYSetup(*MessInput, dataString);
@@ -128,19 +107,7 @@ dataString = CRY_DATA_PATH;
 //----------------------------------------------------------------------------//
 void PrimaryGeneratorAction_CRY::CRYFromFile(G4String newValue)
 {
-  /*char *str;
-  std::string dataString("");
-  if ((str = getenv("CRYDATAPATH")) != NULL) {
-    dataString += std::string(str);
-  }
-  else {
-    dataString += std::string("../data");
-  }*/
-
-  char *str;
-std::string dataString("");
-
-dataString = CRY_DATA_PATH;
+  std::string dataString = CRY_DATA_PATH;
   
   // Read the cry input file
   std::ifstream inputFile;

@@ -43,12 +43,12 @@ public:
   virtual std::string GetInfoSummary() const override;
 
 private:
-  std::vector<CRYParticle*> *vect; // vector of generated particles
+  std::vector<CRYParticle*> *vect = nullptr; // vector of generated particles
   G4ParticleTable* particleTable;
-  G4ParticleGun* particleGun;
-  CRYGenerator* gen;
+  G4ParticleGun* particleGun = nullptr;
+  CRYGenerator* gen = nullptr;
   G4int InputState;
-  PrimaryGeneratorMessenger* gunMessenger;
+  PrimaryGeneratorMessenger* gunMessenger = nullptr;
 
 };
 

@@ -78,6 +78,9 @@ target_include_directories(MuravesSim PRIVATE
     ${CMAKE_BINARY_DIR}/include
 )
 target_link_libraries(MuravesSim PRIVATE ${CRY_LIB} ${Geant4_LIBRARIES})
+target_compile_definitions(MuravesSim PRIVATE
+    CRY_DATA_PATH="${CRY_PATH}/data"
+)
 
 target_compile_definitions(MuravesSim PRIVATE
     CRY_DATA_PATH="${CRY_PATH}/data"
