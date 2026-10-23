@@ -10,3 +10,7 @@ generated_submit.condor
 *.xml
 *.env
 build-t2b/
+!CMakeLists.txt
+.DS_Store
+.vscode/
+PUMAS-and-TURTLE/Mulder/mulder_output/
